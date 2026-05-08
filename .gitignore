@@ -1,5 +1,6 @@
 # Generated data (game extraction outputs)
 data/
+icons/
 
 # Python cache
 __pycache__/
