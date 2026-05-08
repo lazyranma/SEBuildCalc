@@ -6,6 +6,10 @@ __pycache__/
 *.pyc
 *.pyo
 
+# .NET build outputs
+extract/bin/
+extract/obj/
+
 # IDEs
 .idea/
 .vscode/

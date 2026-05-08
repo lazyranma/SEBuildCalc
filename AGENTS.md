@@ -8,74 +8,68 @@ generates a standalone interactive HTML calculator (`index.html`).
 ## Data Pipeline
 
 ```
-[Game Assets] ──extract──> [data/*.json] ──generate──> [index.html]
+[Game (running)] ──BepInEx plugin──> [data/*.json] ──generate──> [index.html]
+                       │
+                       └── extract_icons.py ──> [icons/]
 ```
 
-All extraction scripts read from `sharedassets0.assets` (Unity binary) in the
-game install directory. Each produces one intermediate JSON file in `data/`.
-The final step reads all JSON files and produces `index.html`.
+A single BepInEx plugin (`extract/Plugin.cs`) extracts all game data at runtime
+via the real C# API.  Resource icons are still extracted from the Unity asset
+bundle via Python.
 
 ## Project Structure
 
 ```
 SolarExpanseCalc/
-├── extract_costs.py           # Extract facility build costs
-├── extract_spacecraft_costs.py # Extract spacecraft costs
-├── dump_loc.py                # Dump localization strings
-├── extract_buildability.py    # Extract isObsolete flags
-├── extract_research.py        # Extract research unlock data
-├── extract_icons.py           # Extract resource icons
-├── generate_table.py          # Generate index.html
-├── Makefile                   # Orchestrate extraction + generation
-├── AGENTS.md                  # This file
-├── index.html                 # (generated) Interactive HTML calculator
-├── icons/                     # (generated) PNG resource icons
-└── data/                      # (generated, git-ignored)
+├── extract/
+│   ├── Plugin.cs                       # BepInEx data extraction plugin
+│   ├── SolarExpanseExtract.csproj       # .NET project file
+│   ├── run_extract.py                   # Build + launch + wait + kill
+│   └── README.md
+├── extract_icons.py                     # Extract resource icons (Python)
+├── generate_table.py                    # Generate index.html
+├── Makefile                             # Orchestrate pipeline
+├── AGENTS.md                            # This file
+├── .gitignore
+├── index.html                           # (generated) HTML calculator
+├── icons/                               # (generated) PNG resource icons
+└── data/                                # (generated, git-ignored)
     ├── facility_costs.json
     ├── spacecraft_costs.json
     ├── loc_names.txt
     ├── extracted_buildability.json
     ├── research_unlocks.json
-    └── research/              # BepInEx plugin + investigation notes
 ```
 
-### Extraction Scripts (read game, write data/)
+### Extraction (BepInEx plugin — replaces 5 old Python scripts)
 
-| Script | Output | What it extracts |
-|---|---|---|
-| `extract_costs.py` | `data/facility_costs.json` | Build costs, C# `class_type`, **`facility_type`** (EFacilityType enum 0-8) |
-| `extract_spacecraft_costs.py` | `data/spacecraft_costs.json` | Spacecraft build costs and display names |
-| `dump_loc.py` | `data/loc_names.txt` | Display names for all facilities (`build_*`, `module_*`) |
-| `extract_buildability.py` | `data/extracted_buildability.json` | `isObsolete` flag per facility |
-| `extract_research.py` | `data/research_unlocks.json` | Facility IDs unlocked by each research |
-| `extract_icons.py` | `icons/` | PNG icons for each resource type |
+| Output | Source in plugin |
+|---|---|
+| `data/facility_costs.json` | `FacilityBaseDescriptor.Price`, `TimeToBuildInDays` |
+| `data/spacecraft_costs.json` | `SpacecraftType.PriceBase`, `TimeToBuildInDays` |
+| `data/loc_names.txt` | `StreamingAssets/Languages/en-US.csv` |
+| `data/extracted_buildability.json` | `IsLocked`, `IsObsolete`, `ShowOnUI`, `facilityType` |
+| `data/research_unlocks.json` | `UnlockData.actionUnlock` + `parameter1` fields |
 
-### Generation Script
+### Generation
 
 | Script | Input | Output |
 |---|---|---|
 | `generate_table.py` | All data/ files + icons/ | `index.html` |
 
-### Other
-
-| File | Purpose |
-|---|---|
-| `Makefile` | Orchestrates extraction + generation; `make clean` removes all outputs |
-| `data/research/` | BepInEx plugin and investigation artifacts (not part of pipeline) |
-| `AGENTS.md` | This file |
-
 ## Running
 
 ```bash
-# Set the game directory (either env var or make variable):
 export SOLAR_EXPANSE_DIR="D:\Steam\steamapps\common\Solar Expanse"
 
-make          # full pipeline: extract everything, generate HTML
-make clean    # remove all generated files (data/*.json, icons/, index.html)
-make table    # generate HTML only (requires data/ files present)
+make extract-run    # Launch game, extract all data, kill game
+make icons          # Extract resource icons
+make table          # Generate HTML
+make clean          # Remove all generated files
+
+# Or all in one:
+make extract-run icons table
 ```
 
-The game directory can be set via:
-- Environment variable: `SOLAR_EXPANSE_DIR`
-- Make variable: `make GAME_DIR="path/to/game"`
-- Directly to each script: `python extract_costs.py --game-dir "path/to/game"`
+The plugin writes a config file (`SolarExpanseExtract.cfg`) next to the DLL so
+it knows where to output data. The `run_extract.py` script manages this.

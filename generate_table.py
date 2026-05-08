@@ -94,22 +94,9 @@ SKIP_IDS = {
 def _is_buildable_id(fid, entry):
     """Determine if a facility ID represents a player-buildable item.
 
-    A facility is buildable if it passes all of these checks:
-    1. Has a localization key (internal/test items lack one)
-    2. Not a test/fake artifact
-    3. isObsolete must be False (extracted from FacilityBaseDescriptor)
-    4. Not a known non-buildable class type (e.g. NuclearBomb)
-    5. Not in the hardcoded skip list
-    6. Must be reachable by the player:
-       a. Either it has a research definition that unlocks it, OR
-       b. It is freely available from the start (no variant suffix that
-          indicates a locked-but-unresearchable state).
-
-    Variants ending with _big, _deposition, or a trailing 2 have isLocked=true
-    in the game data but no corresponding research definition — they can never
-    be unlocked and are effectively unbuildable. We identify them by checking
-    that they are neither in the research unlock set nor a freely-available
-    (non-variant) facility.
+    Uses isLocked from the BepInEx plugin (real C# property) instead of
+    suffix-matching heuristics. Falls back to suffix check only when
+    isLocked is absent from the buildability data.
     """
     # Must have localization
     if fid not in loc:
@@ -120,7 +107,7 @@ def _is_buildable_id(fid, entry):
     if "test" in lower_id or "fake" in lower_id:
         return False
 
-    # Check extracted isObsolete flag (reliably extracted from Odin binary)
+    # Check isObsolete flag
     bd = _BUILDABILITY.get(fid)
     if bd is not None and bd.get("isObsolete", False):
         return False
@@ -134,22 +121,16 @@ def _is_buildable_id(fid, entry):
     if fid in SKIP_IDS:
         return False
 
-    # --- Research-driven buildability check ---
-    # A facility is buildable if:
-    #   a) It is in the research unlock set (isLocked=true + research exists), OR
-    #   b) It is freely available (isLocked=false, no research needed).
-    #
-    # We cannot directly extract isLocked from the Odin binary (it is a simple
-    # bool buried among many complex fields that Odin may or may not serialize
-    # depending on defaults).  However, every facility with isLocked=true but
-    # no research happens to carry a _big, _deposition, or trailing-2 suffix.
-    # Conversely, every facility without those suffixes has isLocked=false.
-    # The suffix check is therefore a reliable proxy for isLocked when the
-    # facility is not in the research set.
+    # --- isLocked check (real data from BepInEx plugin) ---
+    if bd is not None and "isLocked" in bd:
+        is_locked = bd["isLocked"]
+        if not is_locked:
+            return True  # freely available
+        return fid in _RESEARCH_UNLOCK_SET  # locked: needs research
+
+    # Fallback: old Python extraction without isLocked — suffix proxy
     if fid in _RESEARCH_UNLOCK_SET:
         return True
-    # Not in research set: only include if freely available (isLocked=false).
-    # Locked-but-unresearchable variants all carry one of these suffixes.
     if fid.endswith("_big") or fid.endswith("_deposition") or fid.endswith("2"):
         return False
     return True
@@ -165,11 +146,21 @@ modules = {
     for k, v in facility_data.items()
     if k.startswith("module_") and _is_buildable_id(k, v)
 }
-spacecraft = {
-    k: v
-    for k, v in spacecraft_data.items()
-    if v.get("display_name") and (v.get("resources") or v.get("build_time_days"))
-}
+spacecraft = {}
+for k, v in spacecraft_data.items():
+    display_name = v.get("display_name")
+    if not display_name:
+        text_key = v.get("text_key", "")
+        # Try exact match, then lowercase (C# Name -> CSV key)
+        display_name = (
+            loc.get(text_key, "")
+            or loc.get(text_key.lower(), "")
+            or loc.get(k, "")
+            or loc.get(k.lower(), "")
+        )
+    if display_name and (v.get("resources") or v.get("build_time_days")):
+        v["display_name"] = display_name
+        spacecraft[k] = v
 
 # facility_costs.json carries "facility_type" (extracted by extract_costs.py).
 # Build a quick lookup:  facility_id -> enum int (0=Modules … 8=Segments).
