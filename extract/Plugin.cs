@@ -104,13 +104,17 @@ namespace SolarExpanseExtract
             var facilities = ExtractFacilities(manager);
             var spacecraft = ExtractSpacecraft(manager);
             var research = ExtractResearch(manager);
+            var resourceIcons = ExtractResourceIcons(manager);
             var loc = ExtractLocalization();
 
             // Write output files
             WriteJson("facility_costs.json", facilities.costs);
-            WriteJson("spacecraft_costs.json", spacecraft);
+            WriteJson("spacecraft_costs.json", spacecraft.costs);
             WriteJson("extracted_buildability.json", facilities.buildability);
             WriteJson("research_unlocks.json", new Dictionary<string, object> { ["all_unlocked_facilities"] = research });
+            WriteJson("facility_icons.json", facilities.icons);
+            WriteJson("spacecraft_icons.json", spacecraft.icons);
+            WriteJson("resource_icons.json", resourceIcons);
             WriteLocNames(loc);
 
             Logger.LogInfo($"  Facilities:  {facilities.costs.Count}");
@@ -128,7 +132,8 @@ namespace SolarExpanseExtract
                     {
                         DumpProperties(resList[0], "First Research");
                         var unlockData = GetProp<object>(resList[0], "UnlockData");
-                        if (unlockData != null) {
+                        if (unlockData != null)
+                        {
                             DumpProperties(unlockData, "UnlockData");
                             // Also dump fields
                             var udType = unlockData.GetType();
@@ -136,17 +141,19 @@ namespace SolarExpanseExtract
                             foreach (var fi in udType.GetFields(
                                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                             {
-                                try {
+                                try
+                                {
                                     var v = fi.GetValue(unlockData);
                                     Logger.LogInfo($"    {fi.Name} ({fi.FieldType.Name}) = {v}");
-                                } catch { }
+                                }
+                                catch { }
                             }
                         }
                     }
                 }
             }
 
-            Logger.LogInfo($"  Spacecraft:  {spacecraft.Count}");
+            Logger.LogInfo($"  Spacecraft:  {spacecraft.costs.Count}");
             Logger.LogInfo($"  Research:    {research.Count}");
             Logger.LogInfo($"  Loc entries: {loc.Count}");
             Logger.LogInfo("=== EXTRACTION DONE ===");
@@ -158,34 +165,40 @@ namespace SolarExpanseExtract
         // Facilities
         // ===================================================================
 
-        (Dictionary<string, object> costs, Dictionary<string, object> buildability)
+        (Dictionary<string, object> costs, Dictionary<string, object> buildability,
+         Dictionary<string, string> icons)
         ExtractFacilities(object manager)
         {
             var costs = new Dictionary<string, object>();
             var buildability = new Dictionary<string, object>();
+            var icons = new Dictionary<string, string>();
 
             var allFacProp = _mgrType.GetProperty("AllFacility",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (allFacProp == null) return (costs, buildability);
+            if (allFacProp == null) return (costs, buildability, icons);
 
             var allFac = allFacProp.GetValue(manager);
-            if (allFac == null) return (costs, buildability);
+            if (allFac == null) return (costs, buildability, icons);
 
             var listProp = allFac.GetType().GetProperty("List",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 ?? allFac.GetType().GetProperty("ListNotEmpty",
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (listProp == null) return (costs, buildability);
+            if (listProp == null) return (costs, buildability, icons);
 
             var list = listProp.GetValue(allFac) as IList;
-            if (list == null) return (costs, buildability);
+            if (list == null) return (costs, buildability, icons);
 
+            var firstFac = true;
             foreach (var f in list)
             {
                 if (f == null) continue;
                 var fid = GetProp<string>(f, "ID");
                 if (string.IsNullOrEmpty(fid)) continue;
                 if (!fid.StartsWith("build_") && !fid.StartsWith("module_")) continue;
+
+                // Dump first facility to discover icon/sprite properties
+                if (firstFac) { DumpProperties(f, "First Facility"); firstFac = false; }
 
 
 
@@ -251,18 +264,25 @@ namespace SolarExpanseExtract
                     ["isLocked"] = GetProp<bool>(f, "IsLocked"),
                     ["showOnUI"] = GetProp<bool>(f, "ShowOnUI"),
                 };
+
+                // -- Icon/sprite name --
+                var spriteName = GetSpriteName(f);
+                if (!string.IsNullOrEmpty(spriteName))
+                    icons[fid] = spriteName;
             }
 
-            return (costs, buildability);
+            return (costs, buildability, icons);
         }
 
         // ===================================================================
         // Spacecraft
         // ===================================================================
 
-        Dictionary<string, object> ExtractSpacecraft(object manager)
+        (Dictionary<string, object> costs, Dictionary<string, string> icons)
+        ExtractSpacecraft(object manager)
         {
             var costs = new Dictionary<string, object>();
+            var icons = new Dictionary<string, string>();
 
             // Try all known property names for spacecraft collection
             var scCollection = GetProp<object>(manager, "AllSpacecraftType");
@@ -283,13 +303,13 @@ namespace SolarExpanseExtract
                 }
             }
 
-            if (scCollection == null) return costs;
+            if (scCollection == null) return (costs, icons);
 
             var list = GetListProp(scCollection, "List")
                     ?? GetListProp(scCollection, "list")
                     ?? (scCollection as IList);
 
-            if (list == null) return costs;
+            if (list == null) return (costs, icons);
 
             var firstSc = true;
             foreach (var sc in list)
@@ -341,9 +361,82 @@ namespace SolarExpanseExtract
                     ["build_time_days"] = buildTime,
                     ["resources"] = resources,
                 };
+
+                // -- Icon/sprite name --
+                var spriteName = GetSpriteName(sc);
+                if (!string.IsNullOrEmpty(spriteName))
+                    icons[scId] = spriteName;
             }
 
-            return costs;
+            return (costs, icons);
+        }
+
+        // ===================================================================
+        // Resource Icons
+        // ===================================================================
+
+        Dictionary<string, string> ExtractResourceIcons(object manager)
+        {
+            var icons = new Dictionary<string, string>();
+
+            // Try AllResource, AllResourceDefinition, or iterate properties
+            object resCollection = null;
+            foreach (var name in new[] { "AllResource", "AllResourceDefinition", "AllResources", "ResourceDefinition" })
+            {
+                resCollection = GetProp<object>(manager, name);
+                if (resCollection != null) break;
+            }
+
+            // Fallback: scan all manager properties for anything containing "resource"
+            if (resCollection == null)
+            {
+                foreach (var prop in _mgrType.GetProperties(
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+                {
+                    if (prop.Name.ToLower().Contains("resource"))
+                    {
+                        Logger.LogInfo($"  Trying resource property: {prop.Name}");
+                        resCollection = prop.GetValue(manager);
+                        if (resCollection != null) break;
+                    }
+                }
+            }
+
+            if (resCollection == null)
+            {
+                Logger.LogWarning("Resource collection not found");
+                return icons;
+            }
+
+            var list = GetListProp(resCollection, "List")
+                    ?? GetListProp(resCollection, "list")
+                    ?? (resCollection as IList);
+
+            if (list == null)
+            {
+                Logger.LogWarning("Resource list is null");
+                return icons;
+            }
+
+            var firstRes = true;
+            foreach (var r in list)
+            {
+                if (r == null) continue;
+                if (firstRes) { DumpProperties(r, "Resource"); firstRes = false; }
+
+                var resId = GetProp<string>(r, "ID");
+                if (string.IsNullOrEmpty(resId)) continue;
+
+                // Only extract id_resource_* entries
+                if (!resId.StartsWith("id_resource_")) continue;
+
+                var spriteName = GetSpriteName(r);
+                if (!string.IsNullOrEmpty(spriteName))
+                    icons[resId] = spriteName;
+            }
+
+            Logger.LogInfo($"  Resource icons: {icons.Count}");
+            return icons;
         }
 
         // ===================================================================
@@ -624,11 +717,47 @@ namespace SolarExpanseExtract
         }
 
         // ===================================================================
-        // Config
+        // Icon / Sprite helpers
         // ===================================================================
 
+        /// Try to get the sprite name from an object by checking common
+        /// icon/sprite properties (Sprite, Icon, icon, etc.).
+        static string GetSpriteName(object obj)
+        {
+            if (obj == null) return null;
 
+            // Properties that hold a UnityEngine.Sprite object
+            var spritePropNames = new[] {
+                "Sprite", "Icon", "icon", "sprite",
+                "UISprite", "UIImage", "Image", "UiIcon",
+                "RocketBackGround", "PanelImage"
+            };
+            foreach (var name in spritePropNames)
+            {
+                var sprite = GetProp<object>(obj, name);
+                if (sprite != null)
+                {
+                    var spriteName = GetProp<string>(sprite, "name");
+                    if (!string.IsNullOrEmpty(spriteName))
+                        return spriteName;
+                }
+            }
 
+            // String properties that directly hold a sprite name
+            var stringPropNames = new[] { "SpriteId" };
+            foreach (var name in stringPropNames)
+            {
+                var spriteName = GetProp<string>(obj, name);
+                if (!string.IsNullOrEmpty(spriteName))
+                    return spriteName;
+            }
+
+            return null;
+        }
+
+        // ===================================================================
+        // Config
+        // ===================================================================
 
         void DumpProperties(object obj, string label)
         {

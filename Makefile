@@ -46,14 +46,18 @@ extract-run:
 	$(PYTHON) extract/run_extract.py --game-dir "$(GAME_DIR)"
 
 # --- Resource icons (Python, reads game assets) ---
-$(ICONS_DIR): extract_icons.py
+# Uses a stamp file to avoid cyclic dependency (icons dir = target name)
+ICONS_STAMP := $(ICONS_DIR)/.stamp
+
+$(ICONS_STAMP): extract_icons.py
 	@echo "[*] Extracting resource icons..."
 	$(PYTHON) extract_icons.py --game-dir "$(GAME_DIR)"
+	@type nul > "$(ICONS_STAMP)" 2>NUL || touch "$(ICONS_STAMP)"
 
-icons: $(ICONS_DIR)
+icons: $(ICONS_STAMP)
 
 # --- HTML table ---
-$(HTML_OUT): generate_table.py $(FACILITY_JSON) $(SPACECRAFT_JSON) $(ICONS_DIR) $(LOC_NAMES_TXT) $(BUILDABILITY_JSON) $(RESEARCH_JSON)
+$(HTML_OUT): generate_table.py $(FACILITY_JSON) $(SPACECRAFT_JSON) $(ICONS_STAMP) $(LOC_NAMES_TXT) $(BUILDABILITY_JSON) $(RESEARCH_JSON)
 	@echo "[*] Generating HTML build cost calculator..."
 	$(PYTHON) generate_table.py
 
@@ -68,4 +72,5 @@ clean:
 	-@del /Q "$(LOC_NAMES_TXT)" 2>NUL || rm -f "$(LOC_NAMES_TXT)"
 	-@del /Q "$(BUILDABILITY_JSON)" 2>NUL || rm -f "$(BUILDABILITY_JSON)"
 	-@del /Q "$(RESEARCH_JSON)" 2>NUL || rm -f "$(RESEARCH_JSON)"
+	-@del /Q "$(ICONS_STAMP)" 2>NUL || rm -f "$(ICONS_STAMP)"
 	-@rmdir /S /Q "$(ICONS_DIR)" 2>NUL || rm -rf "$(ICONS_DIR)"

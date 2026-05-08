@@ -1,6 +1,24 @@
+"""
+extract_icons.py — Extract resource, facility, and spacecraft icons from
+Solar Expanse Unity asset files.
+
+Resources: sprites in the solar_expanse_icons atlas (sharedassets0.assets).
+Facilities & spacecraft: standalone Texture2D objects named after the icon
+(mostly in resources.assets), NOT sprites in an atlas.
+
+Strategy:
+  1. Scan all .assets files; build TWO registries:
+     - texture_registry:   Texture2D name → PIL.Image (standalone icons)
+     - sprite_objects:     sprite name → UnityPy Sprite object
+  2. Resource icons: find sprite by name, use sprite.image (UnityPy handles
+     all atlas resolution, alpha merging, cropping, and coordinate flips).
+  3. Facility/spacecraft icons: try texture_registry first, then sprite_objects.
+"""
+
 import argparse
 import json
 import os
+import shutil
 from pathlib import Path
 
 import UnityPy
@@ -22,103 +40,222 @@ if not args.game_dir:
         "ERROR: --game-dir is required (or set SOLAR_EXPANSE_DIR env var)", flush=True
     )
     exit(1)
+
 GAME_DIR = Path(args.game_dir)
-data_dir = str(GAME_DIR / "Solar Expanse_Data")
+data_dir = GAME_DIR / "Solar Expanse_Data"
 output_dir = Path(__file__).resolve().parent / "icons"
 output_dir.mkdir(exist_ok=True)
 
-env = UnityPy.load(os.path.join(data_dir, "sharedassets0.assets"))
+PROJECT_DATA_DIR = Path(__file__).resolve().parent / "data"
 
-# Load the atlas texture
-atlas_img = None
-for obj in env.objects:
-    if obj.type.name == "Texture2D":
-        d = obj.read()
-        if d.m_Name == "solar_expanse_icons":
-            atlas_img = d.image
-            atlas_h = d.m_Height
-            print(f"Loaded atlas: {d.m_Width}x{d.m_Height}")
-            break
+# ---- Step 1: Build global registries across all .assets files ----
 
-if atlas_img is None:
-    print("ERROR: Atlas not found!")
-    exit(1)
+# texture_registry: lowercase name → PIL.Image (standalone Texture2D icons)
+texture_registry = {}
+# sprite_objects: lowercase name → UnityPy Sprite object (for on-demand .image)
+sprite_objects = {}
 
-# Resource ID -> sprite index mapping (from map_resource_icons.py output)
-resource_to_sprite = {
-    "id_resource_alloy": "solar_expanse_icons_13",
-    "id_resource_antimatter": "solar_expanse_icons_19",
-    "id_resource_chips": "solar_expanse_icons_10",
-    "id_resource_co2": "solar_expanse_icons_21",
-    "id_resource_consumergoods": "solar_expanse_icons_20",
-    "id_resource_energy": "solar_expanse_icons_8",
-    "id_resource_fuel": "solar_expanse_icons_5",
-    "id_resource_glass": "solar_expanse_icons_14",
-    "id_resource_hel3": "solar_expanse_icons_6",
-    "id_resource_human": "solar_expanse_icons_18",
-    "id_resource_hydrogen": "solar_expanse_icons_15",
-    "id_resource_metal": "solar_expanse_icons_1",
-    "id_resource_nitrogen": "solar_expanse_icons_22",
-    "id_resource_noblegas": "solar_expanse_icons_17",
-    "id_resource_oxygen": "solar_expanse_icons_16",
-    "id_resource_plastic": "solar_expanse_icons_9",
-    "id_resource_raremetal": "solar_expanse_icons_2",
-    "id_resource_silicon": "solar_expanse_icons_3",
-    "id_resource_steel": "solar_expanse_icons_11",
-    "id_resource_supply": "solar_expanse_icons_7",
-    "id_resource_uran": "solar_expanse_icons_4",
-    "id_resource_volatile": "solar_expanse_icons_12",
-    "id_resource_water": "solar_expanse_icons_0",
-}
+asset_files = sorted(data_dir.glob("*.assets"))
+if not asset_files:
+    asset_files = sorted(data_dir.glob("sharedassets*.assets"))
 
-# Collect sprite rects from Sprite objects
-sprite_rects = {}  # name -> (x, y, w, h) in PIL coords
-for obj in env.objects:
-    if obj.type.name != "Sprite":
-        continue
+print(f"Found {len(asset_files)} asset file(s):")
+for af in asset_files:
+    print(f"  {af.name}")
+
+for asset_path in asset_files:
     try:
-        d = obj.read()
-        name = d.m_Name
-        if not name.startswith("solar_expanse_icons_"):
-            continue
-        rect = d.m_Rect
-        x = int(rect.x)
-        y = int(rect.y)
-        w = int(rect.width)
-        h = int(rect.height)
-        # Unity uses bottom-left origin; PIL uses top-left
-        # Convert: PIL_y = atlas_height - unity_y - sprite_height
-        pil_y = atlas_h - y - h
-        sprite_rects[name] = (x, pil_y, x + w, pil_y + h)
-    except:
-        pass
-
-print(f"Found {len(sprite_rects)} atlas sprites\n")
-
-# Extract each resource icon
-for res_id, sprite_name in sorted(resource_to_sprite.items()):
-    if sprite_name not in sprite_rects:
-        print(f"WARNING: sprite {sprite_name} not found for {res_id}")
+        env = UnityPy.load(str(asset_path))
+    except Exception as e:
+        print(f"  WARNING: Could not load {asset_path.name}: {e}")
         continue
 
-    rect = sprite_rects[sprite_name]
-    icon = atlas_img.crop(rect)
+    # --- Pass A: collect standalone Texture2D objects by name ---
+    for obj in env.objects:
+        if obj.type.name != "Texture2D":
+            continue
+        try:
+            d = obj.read()
+            if d.image is not None:
+                name = (getattr(d, "m_Name", None) or "").lower()
+                if name and name not in texture_registry:
+                    texture_registry[name] = d.image
+        except Exception:
+            pass
 
-    # Save with clean resource name (strip id_resource_ prefix)
+    # --- Pass B: collect Sprite objects by name ---
+    for obj in env.objects:
+        if obj.type.name != "Sprite":
+            continue
+        try:
+            d = obj.read()
+            name = d.m_Name
+            if name:
+                key = name.lower()
+                if key not in sprite_objects:
+                    sprite_objects[key] = d
+        except Exception:
+            pass
+
+print(f"\nTotal standalone textures: {len(texture_registry)}")
+print(f"Total sprite objects:      {len(sprite_objects)}")
+
+
+def get_sprite_image(name):
+    """Return a PIL.Image for a sprite by name, or None.
+
+    Uses UnityPy's built-in sprite.image property which handles:
+      - Atlas texture resolution (including SpriteAtlas references)
+      - Separate alpha texture merging
+      - Cropping to the sprite's textureRect
+      - Packing rotation (flip/rotate)
+      - Bottom-left → top-left coordinate flip
+    """
+    d = sprite_objects.get(name.lower())
+    if d is None:
+        return None
+    try:
+        img = d.image
+        if img is not None:
+            return img
+    except Exception:
+        pass
+    return None
+
+
+# ---- Step 2: Extract resource icons (always from atlas sprites) ----
+
+# Load resource->sprite mapping extracted by the BepInEx plugin
+with open(PROJECT_DATA_DIR / "resource_icons.json", encoding="utf-8") as f:
+    resource_to_sprite = json.load(f)
+print(f"Loaded resource icon mapping ({len(resource_to_sprite)} entries)")
+
+resource_icon_map = {}
+print("\n--- Resource icons ---")
+for res_id, sprite_name in sorted(resource_to_sprite.items()):
+    icon = get_sprite_image(sprite_name)
+    if icon is None:
+        print(f"  WARNING: sprite '{sprite_name}' not found for {res_id}")
+        continue
+
     clean_name = res_id.replace("id_resource_", "")
     out_path = output_dir / f"{clean_name}.png"
     icon.save(out_path)
-    print(f"  Saved: {clean_name}.png ({icon.width}x{icon.height}) [{res_id}]")
+    resource_icon_map[res_id] = f"{clean_name}.png"
+    print(f"  Saved: {clean_name}.png ({icon.width}x{icon.height})")
 
-# Also extract the full atlas for reference
-atlas_img.save(output_dir / "_atlas_full.png")
-print(f"\nAll icons saved to: {output_dir}/")
-print(f"Full atlas saved as: _atlas_full.png")
-
-# Save a resource ID to icon filename mapping JSON
-mapping = {
-    res_id: res_id.replace("id_resource_", "") + ".png" for res_id in resource_to_sprite
-}
 with open(output_dir / "resource_icon_map.json", "w", encoding="utf-8") as f:
-    json.dump(mapping, f, indent=2)
-print("Resource icon map saved: resource_icon_map.json")
+    json.dump(resource_icon_map, f, indent=2)
+
+# ---- Step 3: Extract facility & spacecraft icons ----
+#
+# Lookup order:
+#   1. texture_registry (standalone Texture2D by name)
+#   2. sprite_objects (atlas sprite, via sprite.image)
+
+
+def load_json(filename):
+    path = PROJECT_DATA_DIR / filename
+    if path.exists():
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+facility_icon_map = load_json("facility_icons.json")
+spacecraft_icon_map = load_json("spacecraft_icons.json")
+
+
+def extract_icons(icon_map, subdir_name, label):
+    """Extract icons for a category (facilities or spacecraft).
+
+    For each (game_id → sprite_name) entry:
+      1. Look up sprite_name as a standalone Texture2D (by name).
+      2. Fall back to the sprite registry (via sprite.image).
+    Returns a dict: game_id → relative PNG path.
+    """
+    result = {}
+    if not icon_map:
+        print(f"\n--- No {label} icons data found (run extract-run first) ---")
+        return result
+
+    print(f"\n--- {label} icons ({len(icon_map)} entries) ---")
+    subdir = output_dir / subdir_name
+    # Clean stale icons
+    if subdir.exists():
+        shutil.rmtree(subdir)
+    subdir.mkdir(exist_ok=True)
+
+    found_texture = 0
+    found_sprite = 0
+    missing = 0
+
+    for game_id, sprite_name in sorted(icon_map.items()):
+        if not sprite_name:
+            missing += 1
+            continue
+
+        safe_name = game_id.replace("/", "_").replace("\\", "_")
+        out_path = subdir / f"{safe_name}.png"
+
+        # --- Try standalone texture first ---
+        tex = texture_registry.get(sprite_name.lower())
+        if tex is not None:
+            tex.save(out_path)
+            result[game_id] = f"{subdir_name}/{safe_name}.png"
+            found_texture += 1
+            if found_texture <= 5:
+                print(f"  [tex] Saved: {safe_name}.png ({tex.width}x{tex.height})")
+            continue
+
+        # --- Fall back to sprite ---
+        icon = get_sprite_image(sprite_name)
+        if icon is not None:
+            icon.save(out_path)
+            result[game_id] = f"{subdir_name}/{safe_name}.png"
+            found_sprite += 1
+            if found_sprite <= 5:
+                print(f"  [sprite] Saved: {safe_name}.png ({icon.width}x{icon.height})")
+            continue
+
+        # --- Not found ---
+        missing += 1
+        if missing <= 5:
+            print(f"  MISSING: {game_id} -> '{sprite_name}'")
+
+    total = found_texture + found_sprite
+    if total > 10:
+        extra = (
+            total
+            - max(found_texture if found_texture <= 5 else 5, 0)
+            - max(found_sprite if found_sprite <= 5 else 5, 0)
+        )
+        if extra > 0:
+            print(f"  ... and {extra} more")
+    print(
+        f"  Found: {found_texture} textures + {found_sprite} sprites; missing: {missing}"
+    )
+    return result
+
+
+facility_icons = extract_icons(facility_icon_map, "facilities", "Facility")
+spacecraft_icons = extract_icons(spacecraft_icon_map, "spacecraft", "Spacecraft")
+
+# ---- Step 4: Save combined icon mapping for generate_table.py ----
+
+combined_icon_map = {
+    "resources": resource_icon_map,
+    "facilities": facility_icons,
+    "spacecraft": spacecraft_icons,
+}
+with open(output_dir / "icon_map.json", "w", encoding="utf-8") as f:
+    json.dump(combined_icon_map, f, indent=2)
+
+print("\n--- Summary ---")
+print(f"  Resource icons:     {len(resource_icon_map)}")
+print(f"  Facility icons:     {len(facility_icons)}")
+print(f"  Spacecraft icons:   {len(spacecraft_icons)}")
+print(f"  Texture registry:   {len(texture_registry)} standalone textures")
+print(f"  Sprite objects:     {len(sprite_objects)}")
+print(f"  Icon map saved:     icon_map.json")
+print(f"  Icons directory:    {output_dir}")
