@@ -248,6 +248,14 @@ def wait_for_marker(marker_path: Path, timeout: int):
     return False
 
 
+def uninstall_plugin(plugin_dest: Path, config_dest: Path):
+    """Remove the plugin DLL and config from BepInEx/plugins/."""
+    for f in (plugin_dest, config_dest):
+        if f.exists():
+            f.unlink()
+            print(f"[*] Removed: {f}")
+
+
 def kill_game():
     """Terminate all Solar Expanse processes."""
     if not _is_game_running():
@@ -315,6 +323,8 @@ def main():
     success = wait_for_marker(marker_path, args.timeout)
 
     kill_game()
+
+    uninstall_plugin(plugin_dest, config_dest)
 
     # Remove the marker file - only needed during the run
     if marker_path.exists():
