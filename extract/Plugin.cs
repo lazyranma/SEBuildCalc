@@ -113,7 +113,7 @@ namespace SolarExpanseExtract
             WriteJson("spacecraft_costs.json", spacecraft.costs);
             WriteJson("launch_vehicle_costs.json", launchVehicles.costs);
             WriteJson("extracted_buildability.json", facilities.buildability);
-            WriteJson("research_unlocks.json", new Dictionary<string, object> { ["all_unlocked_facilities"] = research });
+            WriteJson("research_unlocks.json", research);
             WriteJson("facility_icons.json", facilities.icons);
             WriteJson("spacecraft_icons.json", spacecraft.icons);
             WriteJson("launch_vehicle_icons.json", launchVehicles.icons);
@@ -315,11 +315,9 @@ namespace SolarExpanseExtract
 
             if (list == null) return (costs, icons);
 
-            var firstSc = true;
             foreach (var sc in list)
             {
                 if (sc == null) continue;
-                if (firstSc) { DumpProperties(sc, "Spacecraft"); firstSc = false; }
                 var scId = GetProp<string>(sc, "NameRocketType");
                 if (string.IsNullOrEmpty(scId)) continue;
 
@@ -358,12 +356,37 @@ namespace SolarExpanseExtract
                 }
 
                 var buildTime = GetProp<float>(sc, "TimeToBuildInDays");
+                var fakeForFacility = GetField<bool>(sc, "fakeForFacility");
+                var forCycleMission = GetField<bool>(sc, "forCycleMission");
+                var isLocked = GetField<bool>(sc, "isLocked");
+                var lockByHelpNotUse = GetProp<object>(sc, "lockByHelpNotUse");
+                var lockByHelpResearchId = "";
+                if (lockByHelpNotUse != null)
+                {
+                    lockByHelpResearchId = GetProp<string>(lockByHelpNotUse, "ID") ?? "";
+                }
+                var special = GetField<object>(sc, "special")?.ToString() ?? "";
+                var canBuildParameter = GetProp<object>(sc, "CanBuildParameter");
+                var canBuildBy = "";
+                if (canBuildParameter != null)
+                    canBuildBy = GetField<object>(canBuildParameter, "canBuildBy")?.ToString() ?? "";
+                var spaceCraftConstructDefault = GetProp<object>(sc, "spaceCraftConstructDefault");
+                var hasConstructDefault = spaceCraftConstructDefault != null;
+
+                Logger.LogInfo($"  SC {scId}: fakeForFacility={fakeForFacility}, forCycleMission={forCycleMission}, isLocked={isLocked}, unlockResearch={lockByHelpResearchId}, special={special}, canBuildBy={canBuildBy}, hasConstruct={hasConstructDefault}");
 
                 costs[scId] = new Dictionary<string, object>
                 {
                     ["text_key"] = textKey ?? "",
                     ["build_time_days"] = buildTime,
                     ["resources"] = resources,
+                    ["fakeForFacility"] = fakeForFacility,
+                    ["forCycleMission"] = forCycleMission,
+                    ["isLocked"] = isLocked,
+                    ["lockByHelpResearchId"] = lockByHelpResearchId,
+                    ["special"] = special,
+                    ["canBuildBy"] = canBuildBy,
+                    ["hasConstructDefault"] = hasConstructDefault,
                 };
 
                 // -- Icon/sprite name --
@@ -592,26 +615,35 @@ namespace SolarExpanseExtract
         // Research
         // ===================================================================
 
-        HashSet<string> ExtractResearch(object manager)
+        Dictionary<string, object> ExtractResearch(object manager)
         {
-            var unlocked = new HashSet<string>();
+            var unlockedFacility = new List<string>();
+            var unlockedVehicle = new List<string>();
+            var unlockedSpacecraft = new List<string>();
+
+            Dictionary<string, object> EmptyResult() => new Dictionary<string, object>
+            {
+                ["unlocked_facilities"] = new List<string>(),
+                ["unlocked_vehicles"] = new List<string>(),
+                ["unlocked_spacecraft"] = new List<string>(),
+            };
 
             var allResProp = _mgrType.GetProperty("AllResearchDefinition",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             if (allResProp == null)
             {
                 Logger.LogWarning("ExtractResearch: property not found");
-                return unlocked;
+                return EmptyResult();
             }
 
             var allRes = allResProp.GetValue(manager);
-            if (allRes == null) return unlocked;
+            if (allRes == null) return EmptyResult();
 
             var list = GetListProp(allRes, "ListNotEmpty")
                     ?? GetListProp(allRes, "List")
                     ?? (allRes as IList);
 
-            if (list == null) return unlocked;
+            if (list == null) return EmptyResult();
 
             Logger.LogInfo($"ExtractResearch: {list.Count} items");
 
@@ -669,21 +701,34 @@ namespace SolarExpanseExtract
                         if (!string.IsNullOrEmpty(param1)
                             && (param1.StartsWith("build_") || param1.StartsWith("module_")))
                         {
-                            unlocked.Add(param1);
+                            unlockedFacility.Add(param1);
                         }
                     }
                     else if (actionStr == "UnlockVehicleType")
                     {
                         if (!string.IsNullOrEmpty(param1))
                         {
-                            unlocked.Add(param1);
+                            unlockedVehicle.Add(param1);
+                        }
+                    }
+                    else if (actionStr == "UnlockSpacecraftType")
+                    {
+                        if (!string.IsNullOrEmpty(param1))
+                        {
+                            unlockedSpacecraft.Add(param1);
                         }
                     }
                 }
             }
 
             Logger.LogInfo($"ExtractResearch: {validResearchIds.Count} in tree, {skippedOrphan} orphaned, {skippedLockedForUI} locked-for-UI (skipped)");
-            return unlocked;
+            Logger.LogInfo($"  Unlocks: {unlockedFacility.Count} facilities, {unlockedVehicle.Count} vehicles, {unlockedSpacecraft.Count} spacecraft");
+            return new Dictionary<string, object>
+            {
+                ["unlocked_facilities"] = unlockedFacility,
+                ["unlocked_vehicles"] = unlockedVehicle,
+                ["unlocked_spacecraft"] = unlockedSpacecraft,
+            };
         }
 
         /// <summary>

@@ -80,14 +80,28 @@ except FileNotFoundError:
 # These are the only facilities that start locked (isLocked=true) but can become
 # available through research. Facilities without research and without the isLocked
 # flag are freely available from the start.
-_RESEARCH_UNLOCK_SET = set()
-_RESEARCH_UNLOCK_LOWER = set()
+# The game stores unlocks in separate dictionaries per EActionUnlock type.
+_RESEARCH_UNLOCK_FACILITY = set()
+_RESEARCH_UNLOCK_FACILITY_LOWER = set()
+_RESEARCH_UNLOCK_VEHICLE = set()
+_RESEARCH_UNLOCK_VEHICLE_LOWER = set()
+_RESEARCH_UNLOCK_SPACECRAFT = set()
+_RESEARCH_UNLOCK_SPACECRAFT_LOWER = set()
 try:
     with open(DATA_DIR / "research_unlocks.json", encoding="utf-8") as f:
         research_data = json.load(f)
-    _RESEARCH_UNLOCK_SET = set(research_data.get("all_unlocked_facilities", []))
-    _RESEARCH_UNLOCK_LOWER = {u.lower() for u in _RESEARCH_UNLOCK_SET}
-    print(f"Loaded research unlocks for {len(_RESEARCH_UNLOCK_SET)} facilities")
+    _RESEARCH_UNLOCK_FACILITY = set(research_data.get("unlocked_facilities", []))
+    _RESEARCH_UNLOCK_FACILITY_LOWER = {u.lower() for u in _RESEARCH_UNLOCK_FACILITY}
+    _RESEARCH_UNLOCK_VEHICLE = set(research_data.get("unlocked_vehicles", []))
+    _RESEARCH_UNLOCK_VEHICLE_LOWER = {u.lower() for u in _RESEARCH_UNLOCK_VEHICLE}
+    _RESEARCH_UNLOCK_SPACECRAFT = set(research_data.get("unlocked_spacecraft", []))
+    _RESEARCH_UNLOCK_SPACECRAFT_LOWER = {u.lower() for u in _RESEARCH_UNLOCK_SPACECRAFT}
+    print(
+        f"Loaded research unlocks: "
+        f"{len(_RESEARCH_UNLOCK_FACILITY)} facilities, "
+        f"{len(_RESEARCH_UNLOCK_VEHICLE)} vehicles, "
+        f"{len(_RESEARCH_UNLOCK_SPACECRAFT)} spacecraft"
+    )
 except FileNotFoundError:
     print(
         "ERROR: research_unlocks.json not found. Run extract_research.py first.",
@@ -143,10 +157,10 @@ def _is_buildable_id(fid, entry):
         is_locked = bd["isLocked"]
         if not is_locked:
             return True  # freely available
-        return fid in _RESEARCH_UNLOCK_LOWER  # locked: needs research
+        return fid in _RESEARCH_UNLOCK_FACILITY_LOWER  # locked: needs research
 
     # Fallback: old Python extraction without isLocked — suffix proxy
-    if fid in _RESEARCH_UNLOCK_LOWER:
+    if fid in _RESEARCH_UNLOCK_FACILITY_LOWER:
         return True
     if fid.endswith("_big") or fid.endswith("_deposition") or fid.endswith("2"):
         return False
@@ -165,14 +179,24 @@ modules = {
 }
 spacecraft = {}
 for k, v in spacecraft_data.items():
+    # Filter out fake-for-facility, cycle-mission, and cheat spacecraft
+    if v.get("fakeForFacility"):
+        continue
+    if v.get("forCycleMission"):
+        continue
+
     display_name = v.get("display_name")
     if not display_name:
         text_key = v.get("text_key", "")
-        # Try exact match, then lowercase (C# Name -> CSV key)
         display_name = _loc_get(text_key) or _loc_get(k)
-    if display_name and (v.get("resources") or v.get("build_time_days")):
-        v["display_name"] = display_name
-        spacecraft[k] = v
+    if display_name:
+        # Buildability: same logic as LVs — available if not locked, or if
+        # locked but unlocked via research.
+        is_locked = v.get("isLocked", False)
+        is_buildable = not is_locked or k.lower() in _RESEARCH_UNLOCK_SPACECRAFT_LOWER
+        if is_buildable:
+            v["display_name"] = display_name
+            spacecraft[k] = v
 
 # Process dedicated launch vehicle data (from launch_vehicle_costs.json)
 launch_vehicles = {}
@@ -191,7 +215,7 @@ for k, v in launch_vehicle_data.items():
         # Buildability: same logic as facilities — available if not locked, or if
         # locked but unlocked via research.
         is_locked = v.get("isLocked", False)
-        is_buildable = not is_locked or k.lower() in _RESEARCH_UNLOCK_LOWER
+        is_buildable = not is_locked or k.lower() in _RESEARCH_UNLOCK_VEHICLE_LOWER
         if is_buildable:
             v["display_name"] = display_name
             launch_vehicles[k] = v
