@@ -103,6 +103,7 @@ namespace SolarExpanseExtract
 
             var facilities = ExtractFacilities(manager);
             var spacecraft = ExtractSpacecraft(manager);
+            var launchVehicles = ExtractLaunchVehicles(manager);
             var research = ExtractResearch(manager);
             var resourceIcons = ExtractResourceIcons(manager);
             var loc = ExtractLocalization();
@@ -110,10 +111,12 @@ namespace SolarExpanseExtract
             // Write output files
             WriteJson("facility_costs.json", facilities.costs);
             WriteJson("spacecraft_costs.json", spacecraft.costs);
+            WriteJson("launch_vehicle_costs.json", launchVehicles.costs);
             WriteJson("extracted_buildability.json", facilities.buildability);
             WriteJson("research_unlocks.json", new Dictionary<string, object> { ["all_unlocked_facilities"] = research });
             WriteJson("facility_icons.json", facilities.icons);
             WriteJson("spacecraft_icons.json", spacecraft.icons);
+            WriteJson("launch_vehicle_icons.json", launchVehicles.icons);
             WriteJson("resource_icons.json", resourceIcons);
             WriteLocNames(loc);
 
@@ -153,6 +156,7 @@ namespace SolarExpanseExtract
                 }
             }
 
+            Logger.LogInfo($"  Launch Vehicles: {launchVehicles.costs.Count}");
             Logger.LogInfo($"  Spacecraft:  {spacecraft.costs.Count}");
             Logger.LogInfo($"  Research:    {research.Count}");
             Logger.LogInfo($"  Loc entries: {loc.Count}");
@@ -372,6 +376,151 @@ namespace SolarExpanseExtract
         }
 
         // ===================================================================
+        // Launch Vehicles
+        // ===================================================================
+
+        (Dictionary<string, object> costs, Dictionary<string, string> icons)
+        ExtractLaunchVehicles(object manager)
+        {
+            var costs = new Dictionary<string, object>();
+            var icons = new Dictionary<string, string>();
+
+            // Try all known property names for launch vehicle collection
+            object lvCollection = null;
+            foreach (var name in new[] {
+                "AllLaunchVehicleType", "AllLaunchVehicle", "AllLaunchVehicles",
+                "AllRocket", "AllRocketType", "AllLV", "allLaunchVehicleType",
+                "allRockets"
+            })
+            {
+                lvCollection = GetProp<object>(manager, name);
+                if (lvCollection != null)
+                {
+                    Logger.LogInfo($"  Found launch vehicle collection: {name}");
+                    break;
+                }
+            }
+
+            if (lvCollection == null)
+            {
+                Logger.LogWarning("Launch vehicle collection not found, trying alternate paths...");
+                // Try to find via the manager type's properties
+                foreach (var prop in _mgrType.GetProperties(
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+                {
+                    var propNameLower = prop.Name.ToLower();
+                    if (propNameLower.Contains("launchvehicle") ||
+                        propNameLower.Contains("launch_vehicle") ||
+                        propNameLower.Contains("rocket") ||
+                        propNameLower.Contains("alllv"))
+                    {
+                        Logger.LogInfo($"  Found property: {prop.Name} ({prop.PropertyType.Name})");
+                        lvCollection = prop.GetValue(manager);
+                        if (lvCollection != null) break;
+                    }
+                }
+            }
+
+            if (lvCollection == null) return (costs, icons);
+
+            var list = GetListProp(lvCollection, "ListNotEmpty")
+                    ?? GetListProp(lvCollection, "List")
+                    ?? GetListProp(lvCollection, "list")
+                    ?? (lvCollection as IList);
+
+            if (list == null) return (costs, icons);
+
+            Logger.LogInfo($"  Launch vehicle list count: {list.Count}");
+
+            foreach (var lv in list)
+            {
+                if (lv == null) continue;
+
+                var lvId = GetProp<string>(lv, "ID")
+                        ?? GetProp<string>(lv, "NameRocketType")
+                        ?? GetProp<string>(lv, "NameLaunchVehicle")
+                        ?? GetProp<string>(lv, "Name");
+                if (string.IsNullOrEmpty(lvId)) continue;
+
+                var textKey = GetProp<string>(lv, "Name");
+
+                var price = GetProp<object>(lv, "PriceBase")
+                         ?? GetProp<object>(lv, "Price");
+                var resources = new Dictionary<string, double>();
+
+                if (price != null)
+                {
+                    var resList = GetListProp(price, "ListResources")
+                               ?? GetListProp(price, "listResources")
+                               ?? GetListProp(price, "Resources");
+                    if (resList != null)
+                    {
+                        foreach (var rp in resList)
+                        {
+                            if (rp == null) continue;
+                            var resId = GetProp<string>(rp, "ID");
+                            var amount = GetProp<double>(rp, "Price");
+                            // If resource ID not found directly, try via ResourceDefinition
+                            if (string.IsNullOrEmpty(resId))
+                            {
+                                var resDef = GetProp<object>(rp, "ResourceDefinition");
+                                if (resDef != null)
+                                    resId = GetProp<string>(resDef, "ID");
+                            }
+                            if (!string.IsNullOrEmpty(resId) && amount > 0)
+                            {
+                                var key = resId.StartsWith("id_resource_")
+                                    ? resId.Substring(12) : resId;
+                                resources[key] = amount;
+                            }
+                        }
+                    }
+                }
+
+                var buildTime = GetProp<float>(lv, "TimeToBuildInDays");
+                var fakeForFacility = GetField<bool>(lv, "fakeForFacility");
+                var forCycleMission = GetField<bool>(lv, "forCycleMission");
+                var isLocked = GetField<bool>(lv, "isLocked");
+                var lockByHelpNotUse = GetProp<object>(lv, "lockByHelpNotUse");
+                var lockByHelpResearchId = "";
+                if (lockByHelpNotUse != null)
+                {
+                    lockByHelpResearchId = GetProp<string>(lockByHelpNotUse, "ID") ?? "";
+                }
+                var special = GetField<object>(lv, "special")?.ToString() ?? "";
+                var canBuildParameter = GetProp<object>(lv, "CanBuildParameter");
+                var canBuildBy = "";
+                if (canBuildParameter != null)
+                    canBuildBy = GetField<object>(canBuildParameter, "canBuildBy")?.ToString() ?? "";
+                var spaceCraftConstructDefault = GetProp<object>(lv, "spaceCraftConstructDefault");
+                var hasConstructDefault = spaceCraftConstructDefault != null;
+
+                Logger.LogInfo($"  LV {lvId}: fakeForFacility={fakeForFacility}, forCycleMission={forCycleMission}, isLocked={isLocked}, unlockResearch={lockByHelpResearchId}, special={special}, canBuildBy={canBuildBy}, hasConstruct={hasConstructDefault}");
+
+                costs[lvId] = new Dictionary<string, object>
+                {
+                    ["text_key"] = textKey ?? "",
+                    ["build_time_days"] = buildTime,
+                    ["resources"] = resources,
+                    ["fakeForFacility"] = fakeForFacility,
+                    ["forCycleMission"] = forCycleMission,
+                    ["isLocked"] = isLocked,
+                    ["lockByHelpResearchId"] = lockByHelpResearchId,
+                    ["special"] = special,
+                    ["canBuildBy"] = canBuildBy,
+                    ["hasConstructDefault"] = hasConstructDefault,
+                };
+
+                // -- Icon/sprite name --
+                var spriteName = GetSpriteName(lv);
+                if (!string.IsNullOrEmpty(spriteName))
+                    icons[lvId] = spriteName;
+            }
+
+            return (costs, icons);
+        }
+
+        // ===================================================================
         // Resource Icons
         // ===================================================================
 
@@ -466,9 +615,40 @@ namespace SolarExpanseExtract
 
             Logger.LogInfo($"ExtractResearch: {list.Count} items");
 
+            // --- Build ID -> research object map for tree traversal ---
+            var idToResearch = new Dictionary<string, object>();
             foreach (var r in list)
             {
                 if (r == null) continue;
+                var rid = GetProp<string>(r, "ID");
+                if (!string.IsNullOrEmpty(rid) && !idToResearch.ContainsKey(rid))
+                    idToResearch[rid] = r;
+            }
+
+            // --- Compute which research is actually in the tree ---
+            var validResearchIds = ComputeValidResearch(list, idToResearch);
+            int skippedOrphan = 0;
+            int skippedLockedForUI = 0;
+
+            foreach (var r in list)
+            {
+                if (r == null) continue;
+
+                var rid = GetProp<string>(r, "ID");
+                if (string.IsNullOrEmpty(rid) || !validResearchIds.Contains(rid))
+                {
+                    skippedOrphan++;
+                    continue;
+                }
+
+                // Skip research hidden from UI (isLockedForUI).
+                // The game sets its cost to +Infinity and hides it from the
+                // research tree, making it effectively unavailable.
+                if (GetProp<bool>(r, "IsLockedForUI"))
+                {
+                    skippedLockedForUI++;
+                    continue;
+                }
 
                 var unlockList = GetProp<object>(r, "UnlockDataList");
                 var unlockSingle = GetProp<object>(r, "UnlockData");
@@ -482,19 +662,92 @@ namespace SolarExpanseExtract
                 {
                     // actionUnlock is a FIELD (EActionUnlock enum), not a property
                     var actionStr = GetField<object>(ud, "actionUnlock")?.ToString() ?? "";
-                    if (actionStr != "UnlockFacility") continue;
-
-                    // parameter1 is a FIELD containing the facility ID
                     var param1 = GetField<string>(ud, "parameter1");
-                    if (!string.IsNullOrEmpty(param1)
-                        && (param1.StartsWith("build_") || param1.StartsWith("module_")))
+
+                    if (actionStr == "UnlockFacility")
                     {
-                        unlocked.Add(param1);
+                        if (!string.IsNullOrEmpty(param1)
+                            && (param1.StartsWith("build_") || param1.StartsWith("module_")))
+                        {
+                            unlocked.Add(param1);
+                        }
+                    }
+                    else if (actionStr == "UnlockVehicleType")
+                    {
+                        if (!string.IsNullOrEmpty(param1))
+                        {
+                            unlocked.Add(param1);
+                        }
                     }
                 }
             }
 
+            Logger.LogInfo($"ExtractResearch: {validResearchIds.Count} in tree, {skippedOrphan} orphaned, {skippedLockedForUI} locked-for-UI (skipped)");
             return unlocked;
+        }
+
+        /// <summary>
+        /// Computes which research IDs are actually reachable in the research tree.
+        /// Mirrors the game's ResearchDefinition.GetRoot() logic:
+        ///   - If ShowInTree == true, it's a root node (valid)
+        ///   - Otherwise, recursively check RequirementsResearch for a valid root
+        ///   - If no root ancestor found, the research is orphaned (not in tree)
+        /// </summary>
+        HashSet<string> ComputeValidResearch(IList allResearch, Dictionary<string, object> idToResearch)
+        {
+            var valid = new HashSet<string>();
+            var visited = new HashSet<string>();
+
+            foreach (var r in allResearch)
+            {
+                if (r == null) continue;
+                var rid = GetProp<string>(r, "ID");
+                if (string.IsNullOrEmpty(rid)) continue;
+
+                visited.Clear();
+                if (IsResearchInTree(r, idToResearch, visited, 0))
+                    valid.Add(rid);
+            }
+
+            return valid;
+        }
+
+        bool IsResearchInTree(object rd, Dictionary<string, object> idToResearch,
+            HashSet<string> visited, int depth)
+        {
+            // Safety: prevent infinite recursion
+            if (depth > 1000) return false;
+
+            var rid = GetProp<string>(rd, "ID");
+            if (string.IsNullOrEmpty(rid)) return false;
+            if (!visited.Add(rid)) return false; // cycle detected
+
+            // Check ShowInTree property
+            var showInTree = GetProp<bool>(rd, "ShowInTree");
+            if (showInTree) return true;
+
+            // Check requirementsResearch array
+            var reqs = GetProp<object>(rd, "RequirementsResearch");
+            if (reqs is IList reqList)
+            {
+                foreach (var req in reqList)
+                {
+                    if (req == null) continue;
+                    if (IsResearchInTree(req, idToResearch, visited, depth + 1))
+                        return true;
+                }
+            }
+            else if (reqs is Array reqArray)
+            {
+                foreach (var req in reqArray)
+                {
+                    if (req == null) continue;
+                    if (IsResearchInTree(req, idToResearch, visited, depth + 1))
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         // ===================================================================
@@ -508,7 +761,9 @@ namespace SolarExpanseExtract
                 "_Description", "_Capabilities", "_Requirements", "_Warning", "_Tooltip"
             };
             var prefixes = new[] {
-                "build_", "module_", "id_SpacecraftType_", "id_LV_", "spacecraft_"
+                "build_", "module_", "id_SpacecraftType_", "id_LV_", "spacecraft_",
+                                "ID_ROCKET_", "id_rocket_", "LV_", "lv_", "BUILD_LAUNCH_",
+                                "build_launch_"
             };
 
             var langDir = Path.Combine(Application.dataPath,
@@ -529,8 +784,8 @@ namespace SolarExpanseExtract
                 var key = trimmed.Substring(0, idx);
                 var val = trimmed.Substring(idx + 1).Trim('"');
 
-                if (prefixes.Any(p => key.StartsWith(p))
-                    && !suffixes.Any(s => key.EndsWith(s)))
+                if (prefixes.Any(p => key.StartsWith(p, StringComparison.OrdinalIgnoreCase))
+                    && !suffixes.Any(s => key.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
                 {
                     loc[key] = val;
                 }

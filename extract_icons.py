@@ -163,6 +163,7 @@ def load_json(filename):
 
 
 facility_icon_map = load_json("facility_icons.json")
+launch_vehicle_icon_map = load_json("launch_vehicle_icons.json")
 spacecraft_icon_map = load_json("spacecraft_icons.json")
 
 
@@ -239,6 +240,9 @@ def extract_icons(icon_map, subdir_name, label):
 
 
 facility_icons = extract_icons(facility_icon_map, "facilities", "Facility")
+launch_vehicle_icons = extract_icons(
+    launch_vehicle_icon_map, "launch_vehicles", "Launch Vehicle"
+)
 spacecraft_icons = extract_icons(spacecraft_icon_map, "spacecraft", "Spacecraft")
 
 # ---- Step 4: Save combined icon mapping for generate_table.py ----
@@ -246,15 +250,17 @@ spacecraft_icons = extract_icons(spacecraft_icon_map, "spacecraft", "Spacecraft"
 combined_icon_map = {
     "resources": resource_icon_map,
     "facilities": facility_icons,
+    "launch_vehicles": launch_vehicle_icons,
     "spacecraft": spacecraft_icons,
 }
 with open(output_dir / "icon_map.json", "w", encoding="utf-8") as f:
     json.dump(combined_icon_map, f, indent=2)
 
 print("\n--- Summary ---")
-print(f"  Resource icons:     {len(resource_icon_map)}")
-print(f"  Facility icons:     {len(facility_icons)}")
-print(f"  Spacecraft icons:   {len(spacecraft_icons)}")
+print(f"  Resource icons:        {len(resource_icon_map)}")
+print(f"  Facility icons:        {len(facility_icons)}")
+print(f"  Launch vehicle icons:  {len(launch_vehicle_icons)}")
+print(f"  Spacecraft icons:      {len(spacecraft_icons)}")
 print(f"  Texture registry:   {len(texture_registry)} standalone textures")
 print(f"  Sprite objects:     {len(sprite_objects)}")
 print(f"  Icon map saved:     icon_map.json")
