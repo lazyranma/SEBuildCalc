@@ -8,14 +8,16 @@ generates a standalone interactive HTML calculator (`index.html`).
 ## Data Pipeline
 
 ```
-[Game (running)] ──BepInEx plugin──> [data/*.json] ──generate──> [index.html]
-                       │
-                       └── extract_icons.py ──> [icons/]
+Game ──> BepInEx plugin ──> data/*.json ─────┐
+                      ┌─────<────┘           ├──> generate_table.py ──> index.html
+Game assets ──> extract_icons.py ──> icons/ ─┘
 ```
 
 A single BepInEx plugin (`extract/Plugin.cs`) extracts all game data at runtime
 via the real C# API, including icon/sprite references for facilities,
-spacecraft, and resources.
+spacecraft, and resources.  `extract_icons.py` uses those references plus the
+game's Unity asset files to export PNG icons, which `generate_table.py` embeds
+directly into the HTML as base64 data URIs.
 
 ## Project Structure
 
@@ -28,6 +30,9 @@ SolarExpanseCalc/
 ├── extract_icons.py                     # Extract icons from Unity assets (Python)
 ├── generate_table.py                    # Generate index.html
 ├── Makefile                             # Orchestrate pipeline
+├── requirements.txt                     # Python dependencies
+├── README.md                            # User documentation
+├── LICENSE                              # MIT
 ├── AGENTS.md                            # This file
 ├── .gitignore
 ├── index.html                           # (generated) HTML calculator
@@ -65,12 +70,6 @@ SolarExpanseCalc/
 | `data/extracted_buildability.json` | `IsLocked`, `IsObsolete`, `ShowOnUI`, `facilityType` |
 | `data/research_unlocks.json` | `UnlockData.actionUnlock` (= `UnlockFacility` or `UnlockVehicleType`) + `parameter1` |
 
-### Generation
-
-| Script | Input | Output |
-|---|---|---|
-| `generate_table.py` | All data/ files + icons/ | `index.html` |
-
 ## Running
 
 ```bash
@@ -80,7 +79,7 @@ make table          # Generate HTML
 make clean          # Remove all generated files
 
 # Or all in one:
-make extract-run icons table
+make
 ```
 
 ## Known Agent Issues
