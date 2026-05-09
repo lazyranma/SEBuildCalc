@@ -93,10 +93,6 @@ namespace SolarExpanseExtract
             }
         }
 
-        // ===================================================================
-        // Extraction
-        // ===================================================================
-
         void ExtractAll(object manager)
         {
             Logger.LogInfo("=== EXTRACTION START ===");
@@ -108,7 +104,6 @@ namespace SolarExpanseExtract
             var resourceIcons = ExtractResourceIcons(manager);
             var loc = ExtractLocalization();
 
-            // Write output files
             WriteJson("facility_costs.json", facilities.costs);
             WriteJson("spacecraft_costs.json", spacecraft.costs);
             WriteJson("launch_vehicle_costs.json", launchVehicles.costs);
@@ -121,41 +116,6 @@ namespace SolarExpanseExtract
             WriteLocNames(loc);
 
             Logger.LogInfo($"  Facilities:  {facilities.costs.Count}");
-            // --- Research exploration ---
-            var resProp = _mgrType.GetProperty("AllResearchDefinition",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (resProp != null)
-            {
-                var allRes = resProp.GetValue(manager);
-                if (allRes != null)
-                {
-                    DumpProperties(allRes, "AllResearchDefinition collection");
-                    var resList = GetListProp(allRes, "List") ?? (allRes as IList);
-                    if (resList != null && resList.Count > 0)
-                    {
-                        DumpProperties(resList[0], "First Research");
-                        var unlockData = GetProp<object>(resList[0], "UnlockData");
-                        if (unlockData != null)
-                        {
-                            DumpProperties(unlockData, "UnlockData");
-                            // Also dump fields
-                            var udType = unlockData.GetType();
-                            Logger.LogInfo("  --- UnlockData FIELDS ---");
-                            foreach (var fi in udType.GetFields(
-                                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                            {
-                                try
-                                {
-                                    var v = fi.GetValue(unlockData);
-                                    Logger.LogInfo($"    {fi.Name} ({fi.FieldType.Name}) = {v}");
-                                }
-                                catch { }
-                            }
-                        }
-                    }
-                }
-            }
-
             Logger.LogInfo($"  Launch Vehicles: {launchVehicles.costs.Count}");
             Logger.LogInfo($"  Spacecraft:  {spacecraft.costs.Count}");
             Logger.LogInfo($"  Research:    {research.Count}");
@@ -166,7 +126,46 @@ namespace SolarExpanseExtract
         }
 
         // ===================================================================
-        // Facilities
+        // Shared helpers
+        // ===================================================================
+
+        /// <summary>
+        /// Extract resource costs from a ResourcePrice object.
+        /// Reads ListResources property (List of ResourcePriceOne),
+        /// each with ID / ResourceDefinition.ID and Price.
+        /// </summary>
+        static Dictionary<string, double> ExtractResourcesFromPrice(object price)
+        {
+            var resources = new Dictionary<string, double>();
+            if (price == null) return resources;
+
+            var resList = GetListProp(price, "ListResources");
+            if (resList == null) return resources;
+
+            foreach (var rp in resList)
+            {
+                if (rp == null) continue;
+                var resId = GetProp<string>(rp, "ID");
+                if (string.IsNullOrEmpty(resId))
+                {
+                    var resDef = GetProp<object>(rp, "ResourceDefinition");
+                    if (resDef != null)
+                        resId = GetProp<string>(resDef, "ID");
+                }
+                var amount = GetProp<double>(rp, "Price");
+                if (!string.IsNullOrEmpty(resId) && amount > 0)
+                {
+                    var key = resId.StartsWith("id_resource_")
+                        ? resId.Substring(12) : resId;
+                    resources[key] = amount;
+                }
+            }
+
+            return resources;
+        }
+
+        // ===================================================================
+        // Extraction methods
         // ===================================================================
 
         (Dictionary<string, object> costs, Dictionary<string, object> buildability,
@@ -184,16 +183,11 @@ namespace SolarExpanseExtract
             var allFac = allFacProp.GetValue(manager);
             if (allFac == null) return (costs, buildability, icons);
 
-            var listProp = allFac.GetType().GetProperty("List",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                ?? allFac.GetType().GetProperty("ListNotEmpty",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (listProp == null) return (costs, buildability, icons);
-
-            var list = listProp.GetValue(allFac) as IList;
+            var list = GetListProp(allFac, "ListNotEmpty")
+                    ?? GetListProp(allFac, "List")
+                    ?? (allFac as IList);
             if (list == null) return (costs, buildability, icons);
 
-            var firstFac = true;
             foreach (var f in list)
             {
                 if (f == null) continue;
@@ -201,64 +195,16 @@ namespace SolarExpanseExtract
                 if (string.IsNullOrEmpty(fid)) continue;
                 if (!fid.StartsWith("build_") && !fid.StartsWith("module_")) continue;
 
-                // Dump first facility to discover icon/sprite properties
-                if (firstFac) { DumpProperties(f, "First Facility"); firstFac = false; }
-
-
-
-                // -- Build costs --
-                var price = GetProp<object>(f, "Price");
-                var resources = new Dictionary<string, double>();
-                double moneyCost = 0;
-
-                if (price != null)
-                {
-                    // Price has ListResources (List<ResourcePriceOne>)
-                    var resList = GetListProp(price, "ListResources")
-                               ?? GetListProp(price, "listResources")
-                               ?? GetListProp(price, "Resources");
-
-                    if (resList != null)
-                    {
-                        foreach (var rp in resList)
-                        {
-                            if (rp == null) continue;
-                            var resId = GetProp<string>(rp, "ID");
-                            var amount = GetProp<double>(rp, "Price");
-                            // If resource ID not found directly, try via ResourceDefinition
-                            if (string.IsNullOrEmpty(resId))
-                            {
-                                var resDef = GetProp<object>(rp, "ResourceDefinition");
-                                if (resDef != null)
-                                    resId = GetProp<string>(resDef, "ID");
-                            }
-                            if (!string.IsNullOrEmpty(resId) && amount > 0)
-                            {
-                                // Strip id_resource_ prefix
-                                var key = resId.StartsWith("id_resource_")
-                                    ? resId.Substring(12) : resId;
-                                resources[key] = amount;
-                            }
-                        }
-                    }
-
-                    moneyCost = GetProp<double>(price, "BuildCost");
-                }
-
-                var buildTime = GetProp<float>(f, "TimeToBuildInDays");
-
                 var classType = f.GetType().Name;
 
                 costs[fid] = new Dictionary<string, object>
                 {
-                    ["build_time_days"] = buildTime,
-                    ["resources"] = resources,
-                    ["money_cost"] = moneyCost,
+                    ["build_time_days"] = GetProp<float>(f, "TimeToBuildInDays"),
+                    ["resources"] = ExtractResourcesFromPrice(GetProp<object>(f, "Price")),
                     ["class_type"] = classType,
                     ["facility_type"] = GetField<int>(f, "facilityType"),
                 };
 
-                // -- Buildability flags --
                 buildability[fid] = new Dictionary<string, object>
                 {
                     ["facility_id"] = fid,
@@ -266,10 +212,8 @@ namespace SolarExpanseExtract
                     ["facilityType"] = GetField<int>(f, "facilityType"),
                     ["isObsolete"] = GetProp<bool>(f, "IsObsolete"),
                     ["isLocked"] = GetProp<bool>(f, "IsLocked"),
-                    ["showOnUI"] = GetProp<bool>(f, "ShowOnUI"),
                 };
 
-                // -- Icon/sprite name --
                 var spriteName = GetSpriteName(f);
                 if (!string.IsNullOrEmpty(spriteName))
                     icons[fid] = spriteName;
@@ -278,41 +222,18 @@ namespace SolarExpanseExtract
             return (costs, buildability, icons);
         }
 
-        // ===================================================================
-        // Spacecraft
-        // ===================================================================
-
         (Dictionary<string, object> costs, Dictionary<string, string> icons)
         ExtractSpacecraft(object manager)
         {
             var costs = new Dictionary<string, object>();
             var icons = new Dictionary<string, string>();
 
-            // Try all known property names for spacecraft collection
             var scCollection = GetProp<object>(manager, "AllSpacecraftType");
-
-            if (scCollection == null)
-            {
-                Logger.LogWarning("Spacecraft collection not found, trying alternate paths...");
-                // Try to find via the manager type's properties
-                foreach (var prop in _mgrType.GetProperties(
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                {
-                    if (prop.Name.ToLower().Contains("spacecraft"))
-                    {
-                        Logger.LogInfo($"  Found property: {prop.Name} ({prop.PropertyType.Name})");
-                        scCollection = prop.GetValue(manager);
-                        if (scCollection != null) break;
-                    }
-                }
-            }
-
             if (scCollection == null) return (costs, icons);
 
-            var list = GetListProp(scCollection, "List")
-                    ?? GetListProp(scCollection, "list")
+            var list = GetListProp(scCollection, "ListNotEmpty")
+                    ?? GetListProp(scCollection, "List")
                     ?? (scCollection as IList);
-
             if (list == null) return (costs, icons);
 
             foreach (var sc in list)
@@ -321,75 +242,21 @@ namespace SolarExpanseExtract
                 var scId = GetProp<string>(sc, "NameRocketType");
                 if (string.IsNullOrEmpty(scId)) continue;
 
-                var textKey = GetProp<string>(sc, "Name");
-
-                var price = GetProp<object>(sc, "PriceBase");
-                var resources = new Dictionary<string, double>();
-
-                if (price != null)
-                {
-                    var resList = GetListProp(price, "ListResources")
-                               ?? GetListProp(price, "listResources")
-                               ?? GetListProp(price, "Resources");
-                    if (resList != null)
-                    {
-                        foreach (var rp in resList)
-                        {
-                            if (rp == null) continue;
-                            var resId = GetProp<string>(rp, "ID");
-                            var amount = GetProp<double>(rp, "Price");
-                            // If resource ID not found directly, try via ResourceDefinition
-                            if (string.IsNullOrEmpty(resId))
-                            {
-                                var resDef = GetProp<object>(rp, "ResourceDefinition");
-                                if (resDef != null)
-                                    resId = GetProp<string>(resDef, "ID");
-                            }
-                            if (!string.IsNullOrEmpty(resId) && amount > 0)
-                            {
-                                var key = resId.StartsWith("id_resource_")
-                                    ? resId.Substring(12) : resId;
-                                resources[key] = amount;
-                            }
-                        }
-                    }
-                }
-
-                var buildTime = GetProp<float>(sc, "TimeToBuildInDays");
-                var fakeForFacility = GetField<bool>(sc, "fakeForFacility");
-                var forCycleMission = GetField<bool>(sc, "forCycleMission");
-                var isLocked = GetField<bool>(sc, "isLocked");
-                var lockByHelpNotUse = GetProp<object>(sc, "lockByHelpNotUse");
-                var lockByHelpResearchId = "";
-                if (lockByHelpNotUse != null)
-                {
-                    lockByHelpResearchId = GetProp<string>(lockByHelpNotUse, "ID") ?? "";
-                }
-                var special = GetField<object>(sc, "special")?.ToString() ?? "";
-                var canBuildParameter = GetProp<object>(sc, "CanBuildParameter");
-                var canBuildBy = "";
-                if (canBuildParameter != null)
-                    canBuildBy = GetField<object>(canBuildParameter, "canBuildBy")?.ToString() ?? "";
-                var spaceCraftConstructDefault = GetProp<object>(sc, "spaceCraftConstructDefault");
-                var hasConstructDefault = spaceCraftConstructDefault != null;
-
-                Logger.LogInfo($"  SC {scId}: fakeForFacility={fakeForFacility}, forCycleMission={forCycleMission}, isLocked={isLocked}, unlockResearch={lockByHelpResearchId}, special={special}, canBuildBy={canBuildBy}, hasConstruct={hasConstructDefault}");
+                // spaceCraftConstructDefault is a public field, not a property.
+                // Its .Price getter resolves the correct cost (Hull.Value.Price or PriceBase).
+                var constructDefault = GetField<object>(sc, "spaceCraftConstructDefault");
 
                 costs[scId] = new Dictionary<string, object>
                 {
-                    ["text_key"] = textKey ?? "",
-                    ["build_time_days"] = buildTime,
-                    ["resources"] = resources,
-                    ["fakeForFacility"] = fakeForFacility,
-                    ["forCycleMission"] = forCycleMission,
-                    ["isLocked"] = isLocked,
-                    ["lockByHelpResearchId"] = lockByHelpResearchId,
-                    ["special"] = special,
-                    ["canBuildBy"] = canBuildBy,
-                    ["hasConstructDefault"] = hasConstructDefault,
+                    ["text_key"] = GetProp<string>(sc, "Name") ?? "",
+                    ["build_time_days"] = GetProp<float>(sc, "TimeToBuildInDays"),
+                    ["resources"] = ExtractResourcesFromPrice(
+                        GetProp<object>(constructDefault, "Price")),
+                    ["fakeForFacility"] = GetField<bool>(sc, "fakeForFacility"),
+                    ["forCycleMission"] = GetField<bool>(sc, "forCycleMission"),
+                    ["isLocked"] = GetField<bool>(sc, "isLocked"),
                 };
 
-                // -- Icon/sprite name --
                 var spriteName = GetSpriteName(sc);
                 if (!string.IsNullOrEmpty(spriteName))
                     icons[scId] = spriteName;
@@ -398,143 +265,42 @@ namespace SolarExpanseExtract
             return (costs, icons);
         }
 
-        // ===================================================================
-        // Launch Vehicles
-        // ===================================================================
-
         (Dictionary<string, object> costs, Dictionary<string, string> icons)
         ExtractLaunchVehicles(object manager)
         {
             var costs = new Dictionary<string, object>();
             var icons = new Dictionary<string, string>();
 
-            // Try all known property names for launch vehicle collection
-            object lvCollection = null;
-            foreach (var name in new[] {
-                "AllLaunchVehicleType", "AllLaunchVehicle", "AllLaunchVehicles",
-                "AllRocket", "AllRocketType", "AllLV", "allLaunchVehicleType",
-                "allRockets"
-            })
-            {
-                lvCollection = GetProp<object>(manager, name);
-                if (lvCollection != null)
-                {
-                    Logger.LogInfo($"  Found launch vehicle collection: {name}");
-                    break;
-                }
-            }
-
-            if (lvCollection == null)
-            {
-                Logger.LogWarning("Launch vehicle collection not found, trying alternate paths...");
-                // Try to find via the manager type's properties
-                foreach (var prop in _mgrType.GetProperties(
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                {
-                    var propNameLower = prop.Name.ToLower();
-                    if (propNameLower.Contains("launchvehicle") ||
-                        propNameLower.Contains("launch_vehicle") ||
-                        propNameLower.Contains("rocket") ||
-                        propNameLower.Contains("alllv"))
-                    {
-                        Logger.LogInfo($"  Found property: {prop.Name} ({prop.PropertyType.Name})");
-                        lvCollection = prop.GetValue(manager);
-                        if (lvCollection != null) break;
-                    }
-                }
-            }
-
+            var lvCollection = GetProp<object>(manager, "AllLaunchVehicleType");
             if (lvCollection == null) return (costs, icons);
 
             var list = GetListProp(lvCollection, "ListNotEmpty")
                     ?? GetListProp(lvCollection, "List")
-                    ?? GetListProp(lvCollection, "list")
                     ?? (lvCollection as IList);
-
             if (list == null) return (costs, icons);
-
-            Logger.LogInfo($"  Launch vehicle list count: {list.Count}");
 
             foreach (var lv in list)
             {
                 if (lv == null) continue;
 
                 var lvId = GetProp<string>(lv, "ID")
-                        ?? GetProp<string>(lv, "NameRocketType")
-                        ?? GetProp<string>(lv, "NameLaunchVehicle")
-                        ?? GetProp<string>(lv, "Name");
+                        ?? GetProp<string>(lv, "NameRocketType");
                 if (string.IsNullOrEmpty(lvId)) continue;
 
-                var textKey = GetProp<string>(lv, "Name");
-
-                var price = GetProp<object>(lv, "PriceBase")
-                         ?? GetProp<object>(lv, "Price");
-                var resources = new Dictionary<string, double>();
-
-                if (price != null)
-                {
-                    var resList = GetListProp(price, "ListResources")
-                               ?? GetListProp(price, "listResources")
-                               ?? GetListProp(price, "Resources");
-                    if (resList != null)
-                    {
-                        foreach (var rp in resList)
-                        {
-                            if (rp == null) continue;
-                            var resId = GetProp<string>(rp, "ID");
-                            var amount = GetProp<double>(rp, "Price");
-                            // If resource ID not found directly, try via ResourceDefinition
-                            if (string.IsNullOrEmpty(resId))
-                            {
-                                var resDef = GetProp<object>(rp, "ResourceDefinition");
-                                if (resDef != null)
-                                    resId = GetProp<string>(resDef, "ID");
-                            }
-                            if (!string.IsNullOrEmpty(resId) && amount > 0)
-                            {
-                                var key = resId.StartsWith("id_resource_")
-                                    ? resId.Substring(12) : resId;
-                                resources[key] = amount;
-                            }
-                        }
-                    }
-                }
-
-                var buildTime = GetProp<float>(lv, "TimeToBuildInDays");
-                var fakeForFacility = GetField<bool>(lv, "fakeForFacility");
-                var forCycleMission = GetField<bool>(lv, "forCycleMission");
-                var isLocked = GetField<bool>(lv, "isLocked");
-                var lockByHelpNotUse = GetProp<object>(lv, "lockByHelpNotUse");
-                var lockByHelpResearchId = "";
-                if (lockByHelpNotUse != null)
-                {
-                    lockByHelpResearchId = GetProp<string>(lockByHelpNotUse, "ID") ?? "";
-                }
-                var special = GetField<object>(lv, "special")?.ToString() ?? "";
-                var canBuildParameter = GetProp<object>(lv, "CanBuildParameter");
-                var canBuildBy = "";
-                if (canBuildParameter != null)
-                    canBuildBy = GetField<object>(canBuildParameter, "canBuildBy")?.ToString() ?? "";
-                var spaceCraftConstructDefault = GetProp<object>(lv, "spaceCraftConstructDefault");
-                var hasConstructDefault = spaceCraftConstructDefault != null;
-
-                Logger.LogInfo($"  LV {lvId}: fakeForFacility={fakeForFacility}, forCycleMission={forCycleMission}, isLocked={isLocked}, unlockResearch={lockByHelpResearchId}, special={special}, canBuildBy={canBuildBy}, hasConstruct={hasConstructDefault}");
+                // spaceCraftConstructDefault is a public field, not a property
+                var constructDefault = GetField<object>(lv, "spaceCraftConstructDefault");
 
                 costs[lvId] = new Dictionary<string, object>
                 {
-                    ["text_key"] = textKey ?? "",
-                    ["build_time_days"] = buildTime,
-                    ["resources"] = resources,
-                    ["fakeForFacility"] = fakeForFacility,
-                    ["forCycleMission"] = forCycleMission,
-                    ["isLocked"] = isLocked,
-                    ["lockByHelpResearchId"] = lockByHelpResearchId,
-                    ["special"] = special,
-                    ["canBuildBy"] = canBuildBy,
-                    ["hasConstructDefault"] = hasConstructDefault,
+                    ["text_key"] = GetProp<string>(lv, "Name") ?? "",
+                    ["build_time_days"] = GetProp<float>(lv, "TimeToBuildInDays"),
+                    ["resources"] = ExtractResourcesFromPrice(
+                        GetProp<object>(constructDefault, "Price")),
+                    ["fakeForFacility"] = GetField<bool>(lv, "fakeForFacility"),
+                    ["forCycleMission"] = GetField<bool>(lv, "forCycleMission"),
+                    ["isLocked"] = GetField<bool>(lv, "isLocked"),
                 };
 
-                // -- Icon/sprite name --
                 var spriteName = GetSpriteName(lv);
                 if (!string.IsNullOrEmpty(spriteName))
                     icons[lvId] = spriteName;
@@ -543,63 +309,23 @@ namespace SolarExpanseExtract
             return (costs, icons);
         }
 
-        // ===================================================================
-        // Resource Icons
-        // ===================================================================
-
         Dictionary<string, string> ExtractResourceIcons(object manager)
         {
             var icons = new Dictionary<string, string>();
 
-            // Try AllResource, AllResourceDefinition, or iterate properties
-            object resCollection = null;
-            foreach (var name in new[] { "AllResource", "AllResourceDefinition", "AllResources", "ResourceDefinition" })
-            {
-                resCollection = GetProp<object>(manager, name);
-                if (resCollection != null) break;
-            }
+            var resCollection = GetProp<object>(manager, "AllResourceDefinitions");
+            if (resCollection == null) return icons;
 
-            // Fallback: scan all manager properties for anything containing "resource"
-            if (resCollection == null)
-            {
-                foreach (var prop in _mgrType.GetProperties(
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                {
-                    if (prop.Name.ToLower().Contains("resource"))
-                    {
-                        Logger.LogInfo($"  Trying resource property: {prop.Name}");
-                        resCollection = prop.GetValue(manager);
-                        if (resCollection != null) break;
-                    }
-                }
-            }
-
-            if (resCollection == null)
-            {
-                Logger.LogWarning("Resource collection not found");
-                return icons;
-            }
-
-            var list = GetListProp(resCollection, "List")
-                    ?? GetListProp(resCollection, "list")
+            var list = GetListProp(resCollection, "ListNotEmpty")
+                    ?? GetListProp(resCollection, "List")
                     ?? (resCollection as IList);
+            if (list == null) return icons;
 
-            if (list == null)
-            {
-                Logger.LogWarning("Resource list is null");
-                return icons;
-            }
-
-            var firstRes = true;
             foreach (var r in list)
             {
                 if (r == null) continue;
-                if (firstRes) { DumpProperties(r, "Resource"); firstRes = false; }
-
                 var resId = GetProp<string>(r, "ID");
                 if (string.IsNullOrEmpty(resId)) continue;
-
-                // Only extract id_resource_* entries
                 if (!resId.StartsWith("id_resource_")) continue;
 
                 var spriteName = GetSpriteName(r);
@@ -607,13 +333,8 @@ namespace SolarExpanseExtract
                     icons[resId] = spriteName;
             }
 
-            Logger.LogInfo($"  Resource icons: {icons.Count}");
             return icons;
         }
-
-        // ===================================================================
-        // Research
-        // ===================================================================
 
         Dictionary<string, object> ExtractResearch(object manager)
         {
@@ -630,11 +351,7 @@ namespace SolarExpanseExtract
 
             var allResProp = _mgrType.GetProperty("AllResearchDefinition",
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (allResProp == null)
-            {
-                Logger.LogWarning("ExtractResearch: property not found");
-                return EmptyResult();
-            }
+            if (allResProp == null) return EmptyResult();
 
             var allRes = allResProp.GetValue(manager);
             if (allRes == null) return EmptyResult();
@@ -642,12 +359,9 @@ namespace SolarExpanseExtract
             var list = GetListProp(allRes, "ListNotEmpty")
                     ?? GetListProp(allRes, "List")
                     ?? (allRes as IList);
-
             if (list == null) return EmptyResult();
 
-            Logger.LogInfo($"ExtractResearch: {list.Count} items");
-
-            // --- Build ID -> research object map for tree traversal ---
+            // Build ID -> research object map for tree traversal
             var idToResearch = new Dictionary<string, object>();
             foreach (var r in list)
             {
@@ -657,10 +371,7 @@ namespace SolarExpanseExtract
                     idToResearch[rid] = r;
             }
 
-            // --- Compute which research is actually in the tree ---
             var validResearchIds = ComputeValidResearch(list, idToResearch);
-            int skippedOrphan = 0;
-            int skippedLockedForUI = 0;
 
             foreach (var r in list)
             {
@@ -668,31 +379,21 @@ namespace SolarExpanseExtract
 
                 var rid = GetProp<string>(r, "ID");
                 if (string.IsNullOrEmpty(rid) || !validResearchIds.Contains(rid))
-                {
-                    skippedOrphan++;
                     continue;
-                }
 
-                // Skip research hidden from UI (isLockedForUI).
-                // The game sets its cost to +Infinity and hides it from the
-                // research tree, making it effectively unavailable.
                 if (GetProp<bool>(r, "IsLockedForUI"))
-                {
-                    skippedLockedForUI++;
                     continue;
-                }
 
                 var unlockList = GetProp<object>(r, "UnlockDataList");
                 var unlockSingle = GetProp<object>(r, "UnlockData");
 
                 var entries = new System.Collections.Generic.List<object>();
-                if (unlockList is System.Collections.IList ulist)
+                if (unlockList is IList ulist)
                     foreach (var u in ulist) if (u != null) entries.Add(u);
                 if (unlockSingle != null) entries.Add(unlockSingle);
 
                 foreach (var ud in entries)
                 {
-                    // actionUnlock is a FIELD (EActionUnlock enum), not a property
                     var actionStr = GetField<object>(ud, "actionUnlock")?.ToString() ?? "";
                     var param1 = GetField<string>(ud, "parameter1");
 
@@ -700,29 +401,21 @@ namespace SolarExpanseExtract
                     {
                         if (!string.IsNullOrEmpty(param1)
                             && (param1.StartsWith("build_") || param1.StartsWith("module_")))
-                        {
                             unlockedFacility.Add(param1);
-                        }
                     }
                     else if (actionStr == "UnlockVehicleType")
                     {
                         if (!string.IsNullOrEmpty(param1))
-                        {
                             unlockedVehicle.Add(param1);
-                        }
                     }
                     else if (actionStr == "UnlockSpacecraftType")
                     {
                         if (!string.IsNullOrEmpty(param1))
-                        {
                             unlockedSpacecraft.Add(param1);
-                        }
                     }
                 }
             }
 
-            Logger.LogInfo($"ExtractResearch: {validResearchIds.Count} in tree, {skippedOrphan} orphaned, {skippedLockedForUI} locked-for-UI (skipped)");
-            Logger.LogInfo($"  Unlocks: {unlockedFacility.Count} facilities, {unlockedVehicle.Count} vehicles, {unlockedSpacecraft.Count} spacecraft");
             return new Dictionary<string, object>
             {
                 ["unlocked_facilities"] = unlockedFacility,
@@ -731,13 +424,6 @@ namespace SolarExpanseExtract
             };
         }
 
-        /// <summary>
-        /// Computes which research IDs are actually reachable in the research tree.
-        /// Mirrors the game's ResearchDefinition.GetRoot() logic:
-        ///   - If ShowInTree == true, it's a root node (valid)
-        ///   - Otherwise, recursively check RequirementsResearch for a valid root
-        ///   - If no root ancestor found, the research is orphaned (not in tree)
-        /// </summary>
         HashSet<string> ComputeValidResearch(IList allResearch, Dictionary<string, object> idToResearch)
         {
             var valid = new HashSet<string>();
@@ -760,18 +446,14 @@ namespace SolarExpanseExtract
         bool IsResearchInTree(object rd, Dictionary<string, object> idToResearch,
             HashSet<string> visited, int depth)
         {
-            // Safety: prevent infinite recursion
             if (depth > 1000) return false;
 
             var rid = GetProp<string>(rd, "ID");
             if (string.IsNullOrEmpty(rid)) return false;
-            if (!visited.Add(rid)) return false; // cycle detected
+            if (!visited.Add(rid)) return false;
 
-            // Check ShowInTree property
-            var showInTree = GetProp<bool>(rd, "ShowInTree");
-            if (showInTree) return true;
+            if (GetProp<bool>(rd, "ShowInTree")) return true;
 
-            // Check requirementsResearch array
             var reqs = GetProp<object>(rd, "RequirementsResearch");
             if (reqs is IList reqList)
             {
@@ -795,10 +477,6 @@ namespace SolarExpanseExtract
             return false;
         }
 
-        // ===================================================================
-        // Localization
-        // ===================================================================
-
         Dictionary<string, string> ExtractLocalization()
         {
             var loc = new Dictionary<string, string>();
@@ -807,8 +485,7 @@ namespace SolarExpanseExtract
             };
             var prefixes = new[] {
                 "build_", "module_", "id_SpacecraftType_", "id_LV_", "spacecraft_",
-                                "ID_ROCKET_", "id_rocket_", "LV_", "lv_", "BUILD_LAUNCH_",
-                                "build_launch_"
+                "ID_ROCKET_", "id_rocket_", "LV_", "lv_", "BUILD_LAUNCH_", "build_launch_"
             };
 
             var langDir = Path.Combine(Application.dataPath,
@@ -840,7 +517,7 @@ namespace SolarExpanseExtract
         }
 
         // ===================================================================
-        // Output
+        // File output
         // ===================================================================
 
         void WriteJson(string filename, object data)
@@ -874,9 +551,8 @@ namespace SolarExpanseExtract
         static T GetProp<T>(object obj, string name)
         {
             if (obj == null) return default;
-            // Walk the type hierarchy to find the property
             var t = obj.GetType();
-            System.Reflection.PropertyInfo p = null;
+            PropertyInfo p = null;
             while (t != null && p == null)
             {
                 p = t.GetProperty(name,
@@ -893,7 +569,7 @@ namespace SolarExpanseExtract
                 if (typeof(T) == typeof(float) && v is double dv) return (T)(object)(float)dv;
                 if (typeof(T) == typeof(int))
                 {
-                    try { return (T)(object)System.Convert.ToInt32(v); } catch { }
+                    try { return (T)(object)Convert.ToInt32(v); } catch { }
                 }
                 return default;
             }
@@ -921,8 +597,13 @@ namespace SolarExpanseExtract
         {
             if (obj == null) return null;
             var t = obj.GetType();
-            var p = t.GetProperty(name,
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            PropertyInfo p = null;
+            while (t != null && p == null)
+            {
+                p = t.GetProperty(name,
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                t = t.BaseType;
+            }
             if (p == null) return null;
             try { return p.GetValue(obj) as IList; }
             catch { return null; }
@@ -931,18 +612,13 @@ namespace SolarExpanseExtract
         static Type FindTypeByName(Assembly asm, string name)
         {
             try { return asm.GetType(name); } catch { }
-            try
-            {
-                return asm.GetTypes().FirstOrDefault(t => t.Name == name);
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                return ex.Types?.FirstOrDefault(t => t != null && t.Name == name);
-            }
+            foreach (var t in asm.GetTypes())
+                if (t.Name == name) return t;
+            return null;
         }
 
         // ===================================================================
-        // Tiny JSON serializer (no Newtonsoft dependency)
+        // JSON serialization
         // ===================================================================
 
         static string MiniJson(object obj)
@@ -1017,16 +693,13 @@ namespace SolarExpanseExtract
         }
 
         // ===================================================================
-        // Icon / Sprite helpers
+        // Sprite name extraction
         // ===================================================================
 
-        /// Try to get the sprite name from an object by checking common
-        /// icon/sprite properties (Sprite, Icon, icon, etc.).
         static string GetSpriteName(object obj)
         {
             if (obj == null) return null;
 
-            // Properties that hold a UnityEngine.Sprite object
             var spritePropNames = new[] {
                 "Sprite", "Icon", "icon", "sprite",
                 "UISprite", "UIImage", "Image", "UiIcon",
@@ -1043,7 +716,6 @@ namespace SolarExpanseExtract
                 }
             }
 
-            // String properties that directly hold a sprite name
             var stringPropNames = new[] { "SpriteId" };
             foreach (var name in stringPropNames)
             {
@@ -1058,25 +730,6 @@ namespace SolarExpanseExtract
         // ===================================================================
         // Config
         // ===================================================================
-
-        void DumpProperties(object obj, string label)
-        {
-            if (obj == null) return;
-            var t = obj.GetType();
-            Logger.LogInfo($"--- {label} ({t.FullName}) ---");
-            foreach (var p in t.GetProperties(
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-            {
-                try
-                {
-                    var v = p.GetValue(obj);
-                    var vstr = v?.ToString() ?? "null";
-                    if (vstr.Length > 80) vstr = vstr.Substring(0, 77) + "...";
-                    Logger.LogInfo($"  {p.Name} ({p.PropertyType.Name}) = {vstr}");
-                }
-                catch { Logger.LogInfo($"  {p.Name} ({p.PropertyType.Name}) = <error>"); }
-            }
-        }
 
         static string ResolveDataDir()
         {
@@ -1100,12 +753,12 @@ namespace SolarExpanseExtract
             var gameRoot = Path.GetDirectoryName(Application.dataPath);
             return Path.Combine(gameRoot ?? ".", "ExtractedData");
         }
-    }
 
-    internal static class PluginInfo
-    {
-        public const string GUID = "SolarExpanseExtract";
-        public const string Name = "Solar Expanse Data Extractor";
-        public const string Version = "0.2.0";
+        internal static class PluginInfo
+        {
+            public const string GUID = "SolarExpanseExtract";
+            public const string Name = "Solar Expanse Data Extractor";
+            public const string Version = "0.3.0";
+        }
     }
 }
