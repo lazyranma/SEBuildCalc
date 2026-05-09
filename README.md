@@ -149,7 +149,7 @@ The default timeout is 120 seconds.  If the game takes longer to load (e.g., on
 a slow machine or first launch), increase it:
 
 ```sh
-python extract/run_extract.py --game-dir "C:\Steam\...\Solar Expanse" --timeout 300
+python run_extract.py --game-dir "C:\Steam\...\Solar Expanse" --timeout 300
 ```
 
 ## Project Structure
@@ -158,8 +158,8 @@ python extract/run_extract.py --game-dir "C:\Steam\...\Solar Expanse" --timeout 
 SolarExpanseCalc/
 ├── extract/
 │   ├── Plugin.cs                        # BepInEx data extraction plugin
-│   ├── SolarExpanseExtract.csproj       # .NET project file
-│   └── run_extract.py                   # Build + launch + wait + kill
+│   └── SolarExpanseExtract.csproj       # .NET project file
+├── run_extract.py                       # Build + launch + wait + kill
 ├── extract_icons.py                     # Extract icons from Unity assets
 ├── generate_table.py                    # Generate index.html
 ├── Makefile                             # Orchestrate pipeline

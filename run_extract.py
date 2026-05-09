@@ -9,7 +9,7 @@ Build, deploy, and run the BepInEx extraction plugin.
 6. Kill the game
 
 Usage:
-    python extract/run_extract.py [--game-dir PATH] [--timeout SECONDS]
+    python run_extract.py [--game-dir PATH] [--timeout SECONDS]
 """
 
 import argparse
@@ -63,7 +63,7 @@ def resolve_paths():
         sys.exit(1)
 
     game_dir = Path(args.game_dir).resolve()
-    project_root = Path(__file__).resolve().parent.parent
+    project_root = Path(__file__).resolve().parent
     extract_dir = project_root / "extract"
     data_dir = project_root / "data"
     plugin_src = extract_dir / "bin" / "Debug" / "netstandard2.1" / PLUGIN_DLL

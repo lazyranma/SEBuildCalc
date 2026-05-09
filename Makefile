@@ -49,7 +49,7 @@ help:
 # --- BepInEx plugin: build, deploy, run game, extract, kill ---
 extract-run:
 	$(call require-game-dir)
-	$(PYTHON) extract/run_extract.py --game-dir "$(GAME_DIR)"
+	$(PYTHON) run_extract.py --game-dir "$(GAME_DIR)"
 
 # --- Resource icons (Python, reads game assets) ---
 # Uses a stamp file to avoid cyclic dependency (icons dir = target name)

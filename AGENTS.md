@@ -25,8 +25,8 @@ directly into the HTML as base64 data URIs.
 SolarExpanseCalc/
 ├── extract/
 │   ├── Plugin.cs                        # BepInEx data extraction plugin
-│   ├── SolarExpanseExtract.csproj       # .NET project file
-│   └── run_extract.py                   # Build + launch + wait + kill
+│   └── SolarExpanseExtract.csproj       # .NET project file
+├── run_extract.py                       # Build + launch + wait + kill
 ├── extract_icons.py                     # Extract icons from Unity assets (Python)
 ├── generate_table.py                    # Generate index.html
 ├── Makefile                             # Orchestrate pipeline
