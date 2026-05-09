@@ -74,8 +74,6 @@ SolarExpanseCalc/
 ## Running
 
 ```bash
-export SOLAR_EXPANSE_DIR="C:\Steam\steamapps\common\Solar Expanse" # Example
-
 make extract-run    # Launch game, extract all data, kill game
 make icons          # Extract all icons from Unity assets
 make table          # Generate HTML

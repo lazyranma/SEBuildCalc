@@ -23,8 +23,8 @@ HTML_OUT := index.html
 
 .PHONY: all clean icons table help extract-run
 
-# --- Default target ---
-all: table
+# --- Default target: full pipeline ---
+all: extract-run icons table
 
 help:
 	@echo "Solar Expanse Build Cost Calculator"
@@ -32,7 +32,7 @@ help:
 	@echo "  extract-run  Build plugin, launch game, extract all data -> data/*"
 	@echo "  icons        Extract resource icons from game assets -> icons/"
 	@echo "  table        Generate HTML calculator -> index.html"
-	@echo "  all          Same as table (default)"
+	@echo "  all          Full pipeline: extract-run + icons + table"
 	@echo "  clean        Remove all generated files"
 	@echo ""
 	@echo "Typical workflow:"
@@ -53,7 +53,7 @@ ICONS_STAMP := $(ICONS_DIR)/.stamp
 $(ICONS_STAMP): extract_icons.py
 	@echo "[*] Extracting resource icons..."
 	$(PYTHON) extract_icons.py --game-dir "$(GAME_DIR)"
-	@type nul > "$(ICONS_STAMP)" 2>NUL || touch "$(ICONS_STAMP)"
+	@touch "$(ICONS_STAMP)"
 
 icons: $(ICONS_STAMP)
 
@@ -67,12 +67,13 @@ table: $(HTML_OUT)
 # --- Clean ---
 clean:
 	@echo "[*] Cleaning generated files..."
-	-@del /Q "$(HTML_OUT)" 2>NUL || rm -f "$(HTML_OUT)"
-	-@del /Q "$(FACILITY_JSON)" 2>NUL || rm -f "$(FACILITY_JSON)"
-	-@del /Q "$(SPACECRAFT_JSON)" 2>NUL || rm -f "$(SPACECRAFT_JSON)"
-	-@del /Q "$(LAUNCH_VEHICLE_JSON)" 2>NUL || rm -f "$(LAUNCH_VEHICLE_JSON)"
-	-@del /Q "$(LOC_NAMES_TXT)" 2>NUL || rm -f "$(LOC_NAMES_TXT)"
-	-@del /Q "$(BUILDABILITY_JSON)" 2>NUL || rm -f "$(BUILDABILITY_JSON)"
-	-@del /Q "$(RESEARCH_JSON)" 2>NUL || rm -f "$(RESEARCH_JSON)"
-	-@del /Q "$(ICONS_STAMP)" 2>NUL || rm -f "$(ICONS_STAMP)"
-	-@rmdir /S /Q "$(ICONS_DIR)" 2>NUL || rm -rf "$(ICONS_DIR)"
+	-@rm -f "$(HTML_OUT)"
+	-@rm -f "$(FACILITY_JSON)"
+	-@rm -f "$(SPACECRAFT_JSON)"
+	-@rm -f "$(LAUNCH_VEHICLE_JSON)"
+	-@rm -f "$(LOC_NAMES_TXT)"
+	-@rm -f "$(BUILDABILITY_JSON)"
+	-@rm -f "$(RESEARCH_JSON)"
+	-@rm -f "$(ICONS_STAMP)"
+	-@rm -rf "$(ICONS_DIR)"
+	-@rm -rf extract/bin extract/obj
