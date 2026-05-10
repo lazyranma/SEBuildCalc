@@ -53,12 +53,10 @@ UI_TRANSLATIONS = {
         "subtotal_label": "Subtotal",
         "grand_total": "TOTAL",
         "grand_mass": "total mass",
-        "grand_days_seq": "days (sequential)",
-        "grand_days_par": "days with",
-        "grand_module": "module",
-        "grand_modules": "modules",
+        "gp_day_seq": {"one": "day (sequential)", "other": "days (sequential)"},
+        "gp_day_par": {"one": "day with", "other": "days with"},
+        "gp_module": {"one": "module", "other": "modules"},
         "grand_modules_label": "Construction modules:",
-        "grand_parallel_days": "days parallel",
         "tech_diamonds_note": "(-10% cost)",
         "tech_carbon_note": "(-10% time)",
         "btn_clear": "Clear All",
@@ -75,12 +73,10 @@ UI_TRANSLATIONS = {
         "subtotal_label": "Zwischensumme",
         "grand_total": "GESAMT",
         "grand_mass": "Gesamtmasse",
-        "grand_days_seq": "Tage (sequenziell)",
-        "grand_days_par": "Tage mit",
-        "grand_module": "Modul",
-        "grand_modules": "Modulen",
+        "gp_day_seq": {"one": "Tag (sequenziell)", "other": "Tage (sequenziell)"},
+        "gp_day_par": {"one": "Tag mit", "other": "Tage mit"},
+        "gp_module": {"one": "Modul", "other": "Modulen"},
         "grand_modules_label": "Baumodule:",
-        "grand_parallel_days": "Tage parallel",
         "tech_diamonds_note": "(-10% Kosten)",
         "tech_carbon_note": "(-10% Zeit)",
         "btn_clear": "Alles löschen",
@@ -97,12 +93,10 @@ UI_TRANSLATIONS = {
         "subtotal_label": "Sous-total",
         "grand_total": "TOTAL",
         "grand_mass": "masse totale",
-        "grand_days_seq": "jours (séquentiel)",
-        "grand_days_par": "jours avec",
-        "grand_module": "module",
-        "grand_modules": "modules",
+        "gp_day_seq": {"one": "jour (séquentiel)", "other": "jours (séquentiel)"},
+        "gp_day_par": {"one": "jour avec", "other": "jours avec"},
+        "gp_module": {"one": "module", "other": "modules"},
         "grand_modules_label": "Modules de construction :",
-        "grand_parallel_days": "jours en parallèle",
         "tech_diamonds_note": "(-10% coût)",
         "tech_carbon_note": "(-10% temps)",
         "btn_clear": "Tout effacer",
@@ -119,12 +113,10 @@ UI_TRANSLATIONS = {
         "subtotal_label": "Subtotal",
         "grand_total": "TOTAL",
         "grand_mass": "masa total",
-        "grand_days_seq": "días (secuencial)",
-        "grand_days_par": "días con",
-        "grand_module": "módulo",
-        "grand_modules": "módulos",
+        "gp_day_seq": {"one": "día (secuencial)", "other": "días (secuencial)"},
+        "gp_day_par": {"one": "día con", "other": "días con"},
+        "gp_module": {"one": "módulo", "other": "módulos"},
         "grand_modules_label": "Módulos de construcción:",
-        "grand_parallel_days": "días en paralelo",
         "tech_diamonds_note": "(-10% coste)",
         "tech_carbon_note": "(-10% tiempo)",
         "btn_clear": "Limpiar todo",
@@ -141,12 +133,10 @@ UI_TRANSLATIONS = {
         "subtotal_label": "Subtotal",
         "grand_total": "TOTAL",
         "grand_mass": "massa total",
-        "grand_days_seq": "dias (sequencial)",
-        "grand_days_par": "dias com",
-        "grand_module": "módulo",
-        "grand_modules": "módulos",
+        "gp_day_seq": {"one": "dia (sequencial)", "other": "dias (sequencial)"},
+        "gp_day_par": {"one": "dia com", "other": "dias com"},
+        "gp_module": {"one": "módulo", "other": "módulos"},
         "grand_modules_label": "Módulos de construção:",
-        "grand_parallel_days": "dias em paralelo",
         "tech_diamonds_note": "(-10% custo)",
         "tech_carbon_note": "(-10% tempo)",
         "btn_clear": "Limpar tudo",
@@ -163,12 +153,14 @@ UI_TRANSLATIONS = {
         "subtotal_label": "Промежуточный итог",
         "grand_total": "ИТОГО",
         "grand_mass": "общая масса",
-        "grand_days_seq": "дней (последовательно)",
-        "grand_days_par": "дней с",
-        "grand_module": "модулем",
-        "grand_modules": "модулями",
+        "gp_day_seq": {
+            "one": "день (последовательно)",
+            "few": "дня (последовательно)",
+            "many": "дней (последовательно)",
+        },
+        "gp_day_par": {"one": "день с", "few": "дня с", "many": "дней с"},
+        "gp_module": {"one": "модулем", "few": "модулями", "many": "модулями"},
         "grand_modules_label": "Строительные модули:",
-        "grand_parallel_days": "дней параллельно",
         "tech_diamonds_note": "(-10% стоимости)",
         "tech_carbon_note": "(-10% времени)",
         "btn_clear": "Очистить всё",
@@ -185,12 +177,10 @@ UI_TRANSLATIONS = {
         "subtotal_label": "小计",
         "grand_total": "总计",
         "grand_mass": "总质量",
-        "grand_days_seq": "天（顺序）",
-        "grand_days_par": "天（使用",
-        "grand_module": "个模块",
-        "grand_modules": "个模块",
+        "gp_day_seq": {"other": "天（顺序）"},
+        "gp_day_par": {"other": "天（使用"},
+        "gp_module": {"other": "个模块）"},
         "grand_modules_label": "建造模块：",
-        "grand_parallel_days": "天并行）",
         "tech_diamonds_note": "（-10% 成本）",
         "tech_carbon_note": "（-10% 时间）",
         "btn_clear": "全部清除",
@@ -207,12 +197,10 @@ UI_TRANSLATIONS = {
         "subtotal_label": "小計",
         "grand_total": "合計",
         "grand_mass": "総質量",
-        "grand_days_seq": "日（順次）",
-        "grand_days_par": "日（",
-        "grand_module": "モジュール",
-        "grand_modules": "モジュール",
+        "gp_day_seq": {"other": "日（順次）"},
+        "gp_day_par": {"other": "日（"},
+        "gp_module": {"other": "モジュール）"},
         "grand_modules_label": "建設モジュール：",
-        "grand_parallel_days": "日並列）",
         "tech_diamonds_note": "（-10% コスト）",
         "tech_carbon_note": "（-10% 時間）",
         "btn_clear": "すべてクリア",
@@ -229,12 +217,10 @@ UI_TRANSLATIONS = {
         "subtotal_label": "소계",
         "grand_total": "총계",
         "grand_mass": "총 질량",
-        "grand_days_seq": "일 (순차)",
-        "grand_days_par": "일 (",
-        "grand_module": "모듈",
-        "grand_modules": "모듈",
+        "gp_day_seq": {"other": "일 (순차)"},
+        "gp_day_par": {"other": "일 ("},
+        "gp_module": {"other": "모듈)"},
         "grand_modules_label": "건설 모듈:",
-        "grand_parallel_days": "일 병렬)",
         "tech_diamonds_note": "(-10% 비용)",
         "tech_carbon_note": "(-10% 시간)",
         "btn_clear": "모두 지우기",
@@ -1127,6 +1113,13 @@ function getGameLocName(locKey, locale) {{
   return locKey;
 }}
 
+function pluralize(key, count, locale) {{
+  const forms = UI_LOC[locale]?.[key] || UI_LOC['en-US']?.[key];
+  if (!forms) return '';
+  const cat = new Intl.PluralRules(locale).select(Math.abs(count));
+  return forms[cat] || forms.other || '';
+}}
+
 function recalc() {{
   const locale = document.documentElement.lang || currentLocale;
   const grandTotals = {{}};
@@ -1213,7 +1206,7 @@ function recalc() {{
   document.getElementById('grand-mass').textContent =
     fmt(grandMass) + ' t ' + t('grand_mass', locale);
   document.getElementById('grand-days').textContent =
-    fmtDays(grandDays) + ' ' + t('grand_days_seq', locale);
+    fmtDays(grandDays) + ' ' + pluralize('gp_day_seq', grandDays, locale);
 
   const modules = Math.max(1, parseInt(document.getElementById('modules-input').value) || 1);
   // Greedy LPT scheduler: assign each job to the module finishing earliest
@@ -1232,10 +1225,8 @@ function recalc() {{
   const parallelStr = parallelDays > 0
     ? (Number.isInteger(parallelDays) ? parallelDays.toLocaleString('en-US') : parallelDays.toFixed(1))
     : '0';
-  const grandDaysPar = t('grand_days_par', locale);
-  const grandModuleLabel = modules !== 1 ? t('grand_modules', locale) : t('grand_module', locale);
   document.getElementById('grand-parallel').textContent =
-    parallelStr + ' ' + grandDaysPar + ' ' + modules + ' ' + grandModuleLabel;
+    parallelStr + ' ' + pluralize('gp_day_par', parallelDays, locale) + ' ' + modules + ' ' + pluralize('gp_module', modules, locale);
 }}
 
 document.addEventListener('input', e => {{
