@@ -102,7 +102,7 @@ namespace SolarExpanseExtract
             var launchVehicles = ExtractLaunchVehicles(manager);
             var research = ExtractResearch(manager);
             var resourceIcons = ExtractResourceIcons(manager);
-            var loc = ExtractLocalization();
+            var allLoc = ExtractLocalization();
 
             WriteJson("facility_costs.json", facilities.costs);
             WriteJson("spacecraft_costs.json", spacecraft.costs);
@@ -113,13 +113,15 @@ namespace SolarExpanseExtract
             WriteJson("spacecraft_icons.json", spacecraft.icons);
             WriteJson("launch_vehicle_icons.json", launchVehicles.icons);
             WriteJson("resource_icons.json", resourceIcons);
-            WriteLocNames(loc);
+            WriteLocFiles(allLoc);
 
             Logger.LogInfo($"  Facilities:  {facilities.costs.Count}");
             Logger.LogInfo($"  Launch Vehicles: {launchVehicles.costs.Count}");
             Logger.LogInfo($"  Spacecraft:  {spacecraft.costs.Count}");
             Logger.LogInfo($"  Research:    {research.Count}");
-            Logger.LogInfo($"  Loc entries: {loc.Count}");
+            foreach (var kv in allLoc)
+                Logger.LogInfo($"  Loc entries ({kv.Key}): {kv.Value.Count}");
+            Logger.LogInfo($"  Locales found: {allLoc.Count}");
             Logger.LogInfo("=== EXTRACTION DONE ===");
 
             WriteMarker("OK");
@@ -477,43 +479,56 @@ namespace SolarExpanseExtract
             return false;
         }
 
-        Dictionary<string, string> ExtractLocalization()
+        Dictionary<string, Dictionary<string, string>> ExtractLocalization()
         {
-            var loc = new Dictionary<string, string>();
+            var allLoc = new Dictionary<string, Dictionary<string, string>>();
             var suffixes = new[] {
                 "_Description", "_Capabilities", "_Requirements", "_Warning", "_Tooltip"
             };
             var prefixes = new[] {
                 "build_", "module_", "id_SpacecraftType_", "id_LV_", "spacecraft_",
-                "ID_ROCKET_", "id_rocket_", "LV_", "lv_", "BUILD_LAUNCH_", "build_launch_"
+                "ID_ROCKET_", "id_rocket_", "LV_", "lv_", "BUILD_LAUNCH_", "build_launch_",
+                "id_resource_",
+                "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.",
+                "Game.UI.Windows.Windows.ChoseFacilityWindow.Label.",
+                "Game.UI.Windows.Windows.PlanMissionWindow.Header.",
+                "research_mat_"
             };
 
             var langDir = Path.Combine(Application.dataPath,
                 "StreamingAssets", "Languages");
-            if (!Directory.Exists(langDir)) return loc;
+            if (!Directory.Exists(langDir)) return allLoc;
 
-            var csvPath = Path.Combine(langDir, "en-US.csv");
-            if (!File.Exists(csvPath)) return loc;
+            var csvFiles = Directory.GetFiles(langDir, "*.csv");
+            Array.Sort(csvFiles);
 
-            foreach (var line in File.ReadAllLines(csvPath, new UTF8Encoding(false)))
+            foreach (var csvPath in csvFiles)
             {
-                var trimmed = line.Trim();
-                if (string.IsNullOrEmpty(trimmed)) continue;
+                var locale = Path.GetFileNameWithoutExtension(csvPath);
+                var loc = new Dictionary<string, string>();
 
-                var idx = trimmed.IndexOf(',');
-                if (idx <= 0) continue;
-
-                var key = trimmed.Substring(0, idx);
-                var val = trimmed.Substring(idx + 1).Trim('"');
-
-                if (prefixes.Any(p => key.StartsWith(p, StringComparison.OrdinalIgnoreCase))
-                    && !suffixes.Any(s => key.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
+                foreach (var line in File.ReadAllLines(csvPath, new UTF8Encoding(false)))
                 {
-                    loc[key] = val;
+                    var trimmed = line.Trim();
+                    if (string.IsNullOrEmpty(trimmed)) continue;
+
+                    var idx = trimmed.IndexOf(',');
+                    if (idx <= 0) continue;
+
+                    var key = trimmed.Substring(0, idx);
+                    var val = trimmed.Substring(idx + 1).Trim('"');
+
+                    if (prefixes.Any(p => key.StartsWith(p, StringComparison.OrdinalIgnoreCase))
+                        && !suffixes.Any(s => key.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        loc[key] = val;
+                    }
                 }
+
+                allLoc[locale] = loc;
             }
 
-            return loc;
+            return allLoc;
         }
 
         // ===================================================================
@@ -528,13 +543,27 @@ namespace SolarExpanseExtract
             Logger.LogInfo($"  Wrote: {filename}");
         }
 
-        void WriteLocNames(Dictionary<string, string> loc)
+        void WriteLocFiles(Dictionary<string, Dictionary<string, string>> allLoc)
         {
-            var path = Path.Combine(_dataDir, "loc_names.txt");
-            var lines = loc.OrderBy(kv => kv.Key)
-                .Select(kv => $"{kv.Key},{kv.Value}");
-            File.WriteAllLines(path, lines, new UTF8Encoding(false));
-            Logger.LogInfo($"  Wrote: loc_names.txt");
+            var locales = new List<string>();
+            foreach (var kv in allLoc)
+            {
+                var locale = kv.Key;
+                var loc = kv.Value;
+                locales.Add(locale);
+
+                var path = Path.Combine(_dataDir, $"loc_names_{locale}.txt");
+                var lines = loc.OrderBy(k => k.Key)
+                    .Select(e => $"{e.Key},{e.Value}");
+                File.WriteAllLines(path, lines, new UTF8Encoding(false));
+                Logger.LogInfo($"  Wrote: loc_names_{locale}.txt");
+            }
+
+            // Write locales.json
+            var jsonPath = Path.Combine(_dataDir, "locales.json");
+            var json = MiniJson(locales);
+            File.WriteAllText(jsonPath, json, new UTF8Encoding(false));
+            Logger.LogInfo($"  Wrote: locales.json");
         }
 
         void WriteMarker(string status)

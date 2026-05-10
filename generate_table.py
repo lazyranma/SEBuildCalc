@@ -16,41 +16,276 @@ with open(DATA_DIR / "launch_vehicle_costs.json", encoding="utf-8") as f:
 
 icons_dir = BASE_DIR / "icons"
 
-RESOURCE_NAMES = {
-    "metal": "Metals",
-    "raremetal": "Rare Metals",
-    "steel": "Alloy",
-    "alloy": "Exotic Alloys",
-    "chips": "Electronics",
-    "plastic": "Polymers",
-    "glass": "Glass",
-    "silicon": "Silicon",
-    "supply": "Supplies",
-    "fuel": "Chem. Fuel",
-    "hel3": "Helium-3",
-    "uran": "Fissiles",
-    "volatile": "Carbon",
-    "water": "Water",
-    "hydrogen": "Hydrogen",
-    "oxygen": "Oxygen",
-    "nitrogen": "Nitrogen",
-    "noblegas": "Noble Gas",
-    "co2": "CO2",
-    "energy": "Energy",
-    "human": "Human",
-    "consumergoods": "Consumer Goods",
-    "antimatter": "Antimatter",
+ALL_RESOURCES = [
+    "metal",
+    "raremetal",
+    "steel",
+    "alloy",
+    "chips",
+    "plastic",
+    "glass",
+    "silicon",
+    "supply",
+    "fuel",
+    "hel3",
+    "uran",
+    "volatile",
+    "water",
+    "hydrogen",
+    "oxygen",
+    "nitrogen",
+    "noblegas",
+    "co2",
+    "energy",
+    "human",
+    "consumergoods",
+    "antimatter",
+]
+
+UI_TRANSLATIONS = {
+    "en-US": {
+        "title": "Solar Expanse - Build Cost Calculator",
+        "col_name": "Name",
+        "col_qty": "Qty",
+        "col_days": "Days",
+        "col_mass": "Mass",
+        "col_mass_unit": "t",
+        "subtotal_label": "Subtotal",
+        "grand_total": "TOTAL",
+        "grand_mass": "total mass",
+        "grand_days_seq": "days (sequential)",
+        "grand_days_par": "days with",
+        "grand_module": "module",
+        "grand_modules": "modules",
+        "grand_modules_label": "Construction modules:",
+        "grand_parallel_days": "days parallel",
+        "tech_diamonds_note": "(-10% cost)",
+        "tech_carbon_note": "(-10% time)",
+        "btn_clear": "Clear All",
+        "launch_vehicle_col": "Launch Vehicle",
+        "spacecraft_col": "Spacecraft",
+        "copied": "Copied!",
+        "lang_label": "Language:",
+    },
+    "de-DE": {
+        "title": "Solar Expanse - Baukostenrechner",
+        "col_name": "Name",
+        "col_qty": "Anz.",
+        "col_days": "Tage",
+        "col_mass": "Masse",
+        "col_mass_unit": "t",
+        "subtotal_label": "Zwischensumme",
+        "grand_total": "GESAMT",
+        "grand_mass": "Gesamtmasse",
+        "grand_days_seq": "Tage (sequenziell)",
+        "grand_days_par": "Tage mit",
+        "grand_module": "Modul",
+        "grand_modules": "Modulen",
+        "grand_modules_label": "Baumodule:",
+        "grand_parallel_days": "Tage parallel",
+        "tech_diamonds_note": "(-10% Kosten)",
+        "tech_carbon_note": "(-10% Zeit)",
+        "btn_clear": "Alles löschen",
+        "launch_vehicle_col": "Trägerrakete",
+        "spacecraft_col": "Raumschiff",
+        "copied": "Kopiert!",
+        "lang_label": "Sprache:",
+    },
+    "fr-FR": {
+        "title": "Solar Expanse - Calculateur de coûts",
+        "col_name": "Nom",
+        "col_qty": "Qté",
+        "col_days": "Jours",
+        "col_mass": "Masse",
+        "col_mass_unit": "t",
+        "subtotal_label": "Sous-total",
+        "grand_total": "TOTAL",
+        "grand_mass": "masse totale",
+        "grand_days_seq": "jours (séquentiel)",
+        "grand_days_par": "jours avec",
+        "grand_module": "module",
+        "grand_modules": "modules",
+        "grand_modules_label": "Modules de construction :",
+        "grand_parallel_days": "jours en parallèle",
+        "tech_diamonds_note": "(-10% coût)",
+        "tech_carbon_note": "(-10% temps)",
+        "btn_clear": "Tout effacer",
+        "launch_vehicle_col": "Lanceur",
+        "spacecraft_col": "Vaisseau",
+        "copied": "Copié !",
+        "lang_label": "Langue :",
+    },
+    "es-ES": {
+        "title": "Solar Expanse - Calculadora de costes",
+        "col_name": "Nombre",
+        "col_qty": "Cant.",
+        "col_days": "Días",
+        "col_mass": "Masa",
+        "col_mass_unit": "t",
+        "subtotal_label": "Subtotal",
+        "grand_total": "TOTAL",
+        "grand_mass": "masa total",
+        "grand_days_seq": "días (secuencial)",
+        "grand_days_par": "días con",
+        "grand_module": "módulo",
+        "grand_modules": "módulos",
+        "grand_modules_label": "Módulos de construcción:",
+        "grand_parallel_days": "días en paralelo",
+        "tech_diamonds_note": "(-10% coste)",
+        "tech_carbon_note": "(-10% tiempo)",
+        "btn_clear": "Limpiar todo",
+        "launch_vehicle_col": "Vehículo",
+        "spacecraft_col": "Nave",
+        "copied": "¡Copiado!",
+        "lang_label": "Idioma:",
+    },
+    "pt-BR": {
+        "title": "Solar Expanse - Calculadora de custos",
+        "col_name": "Nome",
+        "col_qty": "Qtd.",
+        "col_days": "Dias",
+        "col_mass": "Massa",
+        "col_mass_unit": "t",
+        "subtotal_label": "Subtotal",
+        "grand_total": "TOTAL",
+        "grand_mass": "massa total",
+        "grand_days_seq": "dias (sequencial)",
+        "grand_days_par": "dias com",
+        "grand_module": "módulo",
+        "grand_modules": "módulos",
+        "grand_modules_label": "Módulos de construção:",
+        "grand_parallel_days": "dias em paralelo",
+        "tech_diamonds_note": "(-10% custo)",
+        "tech_carbon_note": "(-10% tempo)",
+        "btn_clear": "Limpar tudo",
+        "launch_vehicle_col": "Veículo",
+        "spacecraft_col": "Nave",
+        "copied": "Copiado!",
+        "lang_label": "Idioma:",
+    },
+    "ru-RU": {
+        "title": "Solar Expanse - Калькулятор стоимости",
+        "col_name": "Название",
+        "col_qty": "Кол.",
+        "col_days": "Дни",
+        "col_mass": "Масса",
+        "col_mass_unit": "т",
+        "subtotal_label": "Промежуточный итог",
+        "grand_total": "ИТОГО",
+        "grand_mass": "общая масса",
+        "grand_days_seq": "дней (последовательно)",
+        "grand_days_par": "дней с",
+        "grand_module": "модулем",
+        "grand_modules": "модулями",
+        "grand_modules_label": "Строительные модули:",
+        "grand_parallel_days": "дней параллельно",
+        "tech_diamonds_note": "(-10% стоимости)",
+        "tech_carbon_note": "(-10% времени)",
+        "btn_clear": "Очистить всё",
+        "launch_vehicle_col": "Ракета",
+        "spacecraft_col": "Корабль",
+        "copied": "Скопировано!",
+        "lang_label": "Язык:",
+    },
+    "zh-CN": {
+        "title": "Solar Expanse - 建造成本计算器",
+        "col_name": "名称",
+        "col_qty": "数量",
+        "col_days": "天数",
+        "col_mass": "质量",
+        "col_mass_unit": "吨",
+        "subtotal_label": "小计",
+        "grand_total": "总计",
+        "grand_mass": "总质量",
+        "grand_days_seq": "天（顺序）",
+        "grand_days_par": "天（使用",
+        "grand_module": "个模块",
+        "grand_modules": "个模块",
+        "grand_modules_label": "建造模块：",
+        "grand_parallel_days": "天并行）",
+        "tech_diamonds_note": "（-10% 成本）",
+        "tech_carbon_note": "（-10% 时间）",
+        "btn_clear": "全部清除",
+        "launch_vehicle_col": "运载火箭",
+        "spacecraft_col": "航天器",
+        "copied": "已复制！",
+        "lang_label": "语言：",
+    },
+    "ja-JP": {
+        "title": "Solar Expanse - 建設コスト計算機",
+        "col_name": "名称",
+        "col_qty": "数量",
+        "col_days": "日数",
+        "col_mass": "質量",
+        "col_mass_unit": "t",
+        "subtotal_label": "小計",
+        "grand_total": "合計",
+        "grand_mass": "総質量",
+        "grand_days_seq": "日（順次）",
+        "grand_days_par": "日（",
+        "grand_module": "モジュール",
+        "grand_modules": "モジュール",
+        "grand_modules_label": "建設モジュール：",
+        "grand_parallel_days": "日並列）",
+        "tech_diamonds_note": "（-10% コスト）",
+        "tech_carbon_note": "（-10% 時間）",
+        "btn_clear": "すべてクリア",
+        "launch_vehicle_col": "打上機",
+        "spacecraft_col": "宇宙船",
+        "copied": "コピーしました！",
+        "lang_label": "言語：",
+    },
+    "ko-KR": {
+        "title": "Solar Expanse - 건설 비용 계산기",
+        "col_name": "이름",
+        "col_qty": "수량",
+        "col_days": "일수",
+        "col_mass": "질량",
+        "col_mass_unit": "t",
+        "subtotal_label": "소계",
+        "grand_total": "총계",
+        "grand_mass": "총 질량",
+        "grand_days_seq": "일 (순차)",
+        "grand_days_par": "일 (",
+        "grand_module": "모듈",
+        "grand_modules": "모듈",
+        "grand_modules_label": "건설 모듈:",
+        "grand_parallel_days": "일 병렬)",
+        "tech_diamonds_note": "(-10% 비용)",
+        "tech_carbon_note": "(-10% 시간)",
+        "btn_clear": "모두 지우기",
+        "launch_vehicle_col": "발사체",
+        "spacecraft_col": "우주선",
+        "copied": "복사됨!",
+        "lang_label": "언어:",
+    },
 }
-ALL_RESOURCES = list(RESOURCE_NAMES.keys())
+
+NATIVE_LANGUAGE_NAMES = {
+    "en-US": "English",
+    "de-DE": "Deutsch",
+    "fr-FR": "Français",
+    "es-ES": "Español",
+    "pt-BR": "Português",
+    "ru-RU": "Русский",
+    "zh-CN": "中文",
+    "ja-JP": "日本語",
+    "ko-KR": "한국어",
+}
+
+# Languages that have UI translations available
+UI_LOCALES = set(UI_TRANSLATIONS.keys())
 
 loc = {}
-with open(DATA_DIR / "loc_names.txt", encoding="utf-8") as f:
-    for line in f:
-        line = line.strip()
-        if not line or "," not in line:
-            continue
-        k, v = line.split(",", 1)
-        loc[k] = v.strip('"')
+_legacy_loc_path = DATA_DIR / "loc_names.txt"
+if _legacy_loc_path.exists():
+    with open(_legacy_loc_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or "," not in line:
+                continue
+            k, v = line.split(",", 1)
+            loc[k] = v.strip('"')
 
 # Build a lowercase index for case-insensitive lookups
 _loc_lower = {k.lower(): v for k, v in loc.items()}
@@ -64,6 +299,122 @@ def _loc_get(key, default=""):
         return loc[key]
     return _loc_lower.get(key.lower(), default)
 
+
+def _sentence_case(s):
+    """Convert to sentence case: first letter uppercase, rest lowercase."""
+    if not s:
+        return s
+    return s[0].upper() + s[1:].lower()
+
+
+# Game localization keys for facility type category tabs (from EFacilityType enum)
+_FACILITY_TYPE_LOC_KEY = {
+    "Modules": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Modules",
+    "Habitation": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Habitation",
+    "Power": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Power",
+    "Mining": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Mining",
+    "Production": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Production",
+    "Launch Facilities": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.LaunchFacilities",
+    "Terraformation": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Terraformation",
+    "Other": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Other",
+    "Segments": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Segments",
+}
+
+# Game localization keys for section headers (PlanMissionWindow step headers)
+_SECTION_LOC_KEY = {
+    "launch_vehicles": "Game.UI.Windows.Windows.PlanMissionWindow.Header.SelectLaunchVehicle2",
+    "spacecraft": "Game.UI.Windows.Windows.PlanMissionWindow.Header.SelectRocket2",
+}
+
+# Game localization keys for research names
+_RESEARCH_LOC_KEY = {
+    "diamondoids": "research_mat_diamondoid_Title",
+    "carbon_allotrope": "research_mat_fibre4_Title",
+}
+
+
+def _cat_display(cat):
+    """Get sentence-case display name for a category from game loc."""
+    loc_key = _FACILITY_TYPE_LOC_KEY.get(cat, "")
+    name = _loc_get(loc_key) or cat
+    return _sentence_case(name)
+
+
+def _section_display(section_id):
+    """Get sentence-case display name for a section from game loc."""
+    loc_key = _SECTION_LOC_KEY.get(section_id, "")
+    name = _loc_get(loc_key) or section_id.replace("_", " ")
+    return _sentence_case(name)
+
+
+# Phase A: Load multiple locale files
+# Map game locale codes to standard BCP 47 codes where they differ
+_GAME_LOCALE_MAP = {
+    "jp-JP": "ja-JP",
+    "ko-KO": "ko-KR",
+}
+ALL_GAME_LOC = {}
+AVAILABLE_LOCALES = []
+
+try:
+    locales_path = DATA_DIR / "locales.json"
+    if locales_path.exists():
+        with open(locales_path, encoding="utf-8") as f:
+            locale_codes = json.load(f)
+        for lc in locale_codes:
+            loc_path = DATA_DIR / f"loc_names_{lc}.txt"
+            if loc_path.exists():
+                locale_dict = {}
+                with open(loc_path, encoding="utf-8") as lf:
+                    for line in lf:
+                        line = line.strip()
+                        if not line or "," not in line:
+                            continue
+                        k, v = line.split(",", 1)
+                        locale_dict[k] = v.strip('"')
+                mapped = _GAME_LOCALE_MAP.get(lc, lc)
+                ALL_GAME_LOC[mapped] = locale_dict
+        AVAILABLE_LOCALES = [
+            _GAME_LOCALE_MAP.get(lc, lc)
+            for lc in locale_codes
+            if _GAME_LOCALE_MAP.get(lc, lc) in ALL_GAME_LOC
+        ]
+    if not AVAILABLE_LOCALES:
+        # Fallback: use existing loc as en-US only
+        ALL_GAME_LOC = {"en-US": loc}
+        AVAILABLE_LOCALES = ["en-US"]
+except Exception:
+    ALL_GAME_LOC = {"en-US": loc}
+    AVAILABLE_LOCALES = ["en-US"]
+
+# Intersect with locales that have UI translations
+AVAILABLE_LOCALES = [l for l in AVAILABLE_LOCALES if l in UI_LOCALES]
+if not AVAILABLE_LOCALES:
+    AVAILABLE_LOCALES = ["en-US"]
+
+# Populate the global 'loc' dict from en-US game locale so existing code
+# (_is_buildable_id, _loc_get, display functions) continues to work.
+if "en-US" in ALL_GAME_LOC and ALL_GAME_LOC["en-US"]:
+    loc = ALL_GAME_LOC["en-US"]
+    _loc_lower = {k.lower(): v for k, v in loc.items()}
+elif not loc:
+    # No data at all — pick the first available game locale as fallback
+    for lc in AVAILABLE_LOCALES:
+        if lc in ALL_GAME_LOC and ALL_GAME_LOC[lc]:
+            loc = ALL_GAME_LOC[lc]
+            _loc_lower = {k.lower(): v for k, v in loc.items()}
+            break
+
+# Build resource_id -> loc_key mapping for resource name lookups in GAME_LOC
+resource_loc_keys = {}
+for rid in ALL_RESOURCES:
+    loc_key = f"id_resource_{rid}"
+    if "en-US" in ALL_GAME_LOC and loc_key in ALL_GAME_LOC["en-US"]:
+        resource_loc_keys[rid] = loc_key
+    else:
+        resource_loc_keys[rid] = None  # fallback to RESOURCE_NAMES
+
+print(f"Available locales: {AVAILABLE_LOCALES}")
 
 # Load buildability flags extracted from the game's Odin-serialized assets.
 # These come from FacilityBaseDescriptor.isObsolete bool.
@@ -380,30 +731,32 @@ def facility_icon_img(fid, size=48):
     return ""
 
 
-def header_row(resources, name_col="Name"):
+def header_row(resources, name_col="Name", name_loc_key="col_name"):
     cells = [
-        f'<th class="col-name">{name_col}</th>',
-        '<th class="col-qty">Qty</th>',
-        '<th class="col-days">Days</th>',
+        f'<th class="col-name" data-loc-key="{name_loc_key}">{name_col}</th>',
+        '<th class="col-qty" data-loc-key="col_qty">Qty</th>',
+        '<th class="col-days" data-loc-key="col_days">Days</th>',
     ]
     for r in resources:
         short = r.replace("id_resource_", "")
         b64 = icon_data.get(r)
+        # Use game loc name, fall back to resource ID
+        res_name = _loc_get(f"id_resource_{r}") or r
         img = (
-            f'<span class="res-icon ric-{short}" '
-            f'title="{RESOURCE_NAMES.get(r, r)}"></span>'
+            f'<span class="res-icon ric-{short}" title="{res_name}"></span>'
             if b64
             else ""
         )
-        label = RESOURCE_NAMES.get(r, r)
         cells.append(
-            f'<th class="col-res" data-res="{r}">{img}<span>{label}</span></th>'
+            f'<th class="col-res" data-res="{r}">{img}<span>{res_name}</span></th>'
         )
-    cells.append('<th class="col-mass">Mass<br><small>(t)</small></th>')
+    cells.append(
+        '<th class="col-mass"><span data-loc-key="col_mass">Mass</span><br><small data-loc-key="col_mass_unit">(t)</small></th>'
+    )
     return "<tr>" + "".join(cells) + "</tr>"
 
 
-def build_rows(entries, resources, key_fn, display_fn, time_fn):
+def build_rows(entries, resources, key_fn, display_fn, time_fn, loc_key_fn=None):
     rows = []
     for key in sorted(entries.keys(), key=display_fn):
         v = entries[key]
@@ -414,8 +767,16 @@ def build_rows(entries, resources, key_fn, display_fn, time_fn):
         name = htmllib.escape(display_fn(key))
         sub = htmllib.escape(key)
         icon_html = facility_icon_img(key_fn(key))
+        # Loc key attributes for multilingual support
+        if loc_key_fn:
+            loc_name_key, loc_name_fallback = loc_key_fn(key, v)
+        else:
+            loc_name_key, loc_name_fallback = key, ""
+        loc_attrs = f' data-loc-name-key="{htmllib.escape(loc_name_key, quote=True)}"'
+        if loc_name_fallback:
+            loc_attrs += f' data-loc-name-fallback="{htmllib.escape(loc_name_fallback, quote=True)}"'
         row = (
-            f"<tr data-costs='{costs_json}' data-time=\"{time_val}\" data-resources='{json.dumps(list(res.keys()))}'>"
+            f"<tr data-costs='{costs_json}' data-time=\"{time_val}\" data-resources='{json.dumps(list(res.keys()))}'{loc_attrs}>"
             f'<td class="col-name">{icon_html}<span>{name}<br><small>{sub}</small></span></td>'
             f'<td class="col-qty"><input type="number" min="0" value="0" class="qty-input"></td>'
             f'<td class="col-days res-days">0</td>'
@@ -428,9 +789,10 @@ def build_rows(entries, resources, key_fn, display_fn, time_fn):
     return "\n".join(rows)
 
 
-def subtotal_row(resources, label="Subtotal"):
+def subtotal_row(resources, label="Subtotal", loc_key=""):
+    loc_attr = f' data-loc-key="{loc_key}"' if loc_key else ""
     cells = [
-        f'<td class="subtotal-label" colspan="2">{label}</td>',
+        f'<td class="subtotal-label" colspan="2"{loc_attr}>{label}</td>',
         '<td class="subtotal col-days" data-sum="days">0</td>',
     ]
     for r in resources:
@@ -443,12 +805,21 @@ def lv_display(k):
     return launch_vehicles[k].get("display_name", k).upper()
 
 
+def lv_loc_key(k, v):
+    """Return (loc_name_key, loc_name_fallback) for a launch vehicle."""
+    text_key = v.get("text_key", "")
+    if text_key:
+        return (k, text_key)
+    return (k, "")
+
+
 lv_rows = build_rows(
     launch_vehicles,
     all_res,
     lambda k: k,
     lv_display,
     lambda v: v.get("build_time_days", 0),
+    loc_key_fn=lv_loc_key,
 )
 
 
@@ -456,8 +827,21 @@ def sc_display(k):
     return spacecraft[k].get("display_name", k).upper()
 
 
+def sc_loc_key(k, v):
+    """Return (loc_name_key, loc_name_fallback) for a spacecraft."""
+    text_key = v.get("text_key", "")
+    if text_key:
+        return (k, text_key)
+    return (k, "")
+
+
 s_rows = build_rows(
-    spacecraft, all_res, lambda k: k, sc_display, lambda v: v.get("build_time_days", 0)
+    spacecraft,
+    all_res,
+    lambda k: k,
+    sc_display,
+    lambda v: v.get("build_time_days", 0),
+    loc_key_fn=sc_loc_key,
 )
 
 # Build categorized building sections HTML.
@@ -472,19 +856,22 @@ for cat in CATEGORY_ORDER:
     if not cat_buildings:
         continue
     cat_res_json = json.dumps(all_res)
+    cat_game_key = _FACILITY_TYPE_LOC_KEY.get(cat, "")
+    cat_display = _cat_display(cat)
     cat_rows = build_rows(
         cat_buildings,
         all_res,
         lambda k: k,
         lambda k: _loc_get(k, k).upper(),
         lambda v: v.get("build_time_days", 0),
+        loc_key_fn=lambda k, v: (k, ""),
     )
-    building_sections_html += f"""<h2>{cat} ({len(cat_buildings)})</h2>
+    building_sections_html += f"""<h2 data-cat="{cat}" data-count="{len(cat_buildings)}" data-loc-key="{cat_game_key}">{cat_display} ({len(cat_buildings)})</h2>
 <table data-res='{cat_res_json}'>
 <thead>{header_row(all_res)}</thead>
 <tbody>
 {cat_rows}
-{subtotal_row(all_res, f"{cat} subtotal")}
+{subtotal_row(all_res, "Subtotal", loc_key="subtotal_label")}
 </tbody>
 </table>
 """
@@ -493,28 +880,38 @@ for cat in CATEGORY_ORDER:
 grand_cells = ""
 for r in all_res:
     short = r.replace("id_resource_", "")
-    img = (
-        f'<span class="res-icon ric-{short}" title="{RESOURCE_NAMES.get(r, r)}"></span>'
-    )
-    label = RESOURCE_NAMES.get(r, r)
+    res_name = _loc_get(f"id_resource_{r}") or r
+    img = f'<span class="res-icon ric-{short}" title="{res_name}"></span>'
     grand_cells += (
         f'<div class="grand-res" id="grand-{r}">'
-        f'  {img}<span class="res-label">{label}</span>'
+        f'  {img}<span class="res-label">{res_name}</span>'
         f'  <span class="res-total" data-grand="{r}">0</span>'
         f"</div>"
     )
 
 all_res_json = json.dumps(all_res)
 
+# Prepare locale data for embedding in HTML
+_available_locales_json = json.dumps(AVAILABLE_LOCALES)
+_game_loc_for_js = {l: ALL_GAME_LOC[l] for l in AVAILABLE_LOCALES if l in ALL_GAME_LOC}
+_game_loc_json = json.dumps(_game_loc_for_js)
+_ui_loc_json = json.dumps(
+    {l: UI_TRANSLATIONS[l] for l in AVAILABLE_LOCALES if l in UI_TRANSLATIONS}
+)
+_resource_loc_keys_json = json.dumps(resource_loc_keys)
+_native_names_json = json.dumps(NATIVE_LANGUAGE_NAMES)
+
 # Build launch vehicles section HTML (only if there are launch vehicles)
+_launch_vehicles_display = _section_display("launch_vehicles")
 launch_vehicles_section_html = ""
 if launch_vehicles:
-    launch_vehicles_section_html = f"""<h2>Launch Vehicles ({len(launch_vehicles)})</h2>
+    lv_game_key = _SECTION_LOC_KEY["launch_vehicles"]
+    launch_vehicles_section_html = f"""<h2 data-count="{len(launch_vehicles)}" data-loc-key="{lv_game_key}">{_launch_vehicles_display} ({len(launch_vehicles)})</h2>
 <table id="tbl-launch-vehicles" data-res='{all_res_json}'>
-<thead>{header_row(all_res, "Launch Vehicle")}</thead>
+<thead>{header_row(all_res, _launch_vehicles_display, "launch_vehicle_col")}</thead>
 <tbody>
 {lv_rows}
-{subtotal_row(all_res, "Launch vehicle subtotal")}
+{subtotal_row(all_res, "Subtotal", loc_key="subtotal_label")}
 </tbody>
 </table>
 """
@@ -595,10 +992,10 @@ tr:hover td {{ background: #1c2128 !important; }}
   display: flex; align-items: center; gap: 4px;
   background: #0d1117; border: 1px solid #21262d;
   border-radius: 6px; padding: 4px 8px; min-width: 120px;
-  font-size: 12px; cursor: pointer; user-select: none;
+  font-size: 12.5px; cursor: pointer; user-select: none;
 }}
 .grand-res:active {{ background: #1a2230; }}
-.grand-res .res-icon {{ width: 36px; height: 36px; margin: 0; flex-shrink: 0; }}
+.grand-res .res-icon {{ width: 28px; height: 28px; margin: 0; flex-shrink: 0; }}
 .res-label {{ color: #8b949e; flex: 1; }}
 .res-total {{ color: #a5d6a7; font-weight: 700; min-width: 60px; text-align: right; }}
 .res-total.zero {{ color: #30363d; }}
@@ -652,45 +1049,61 @@ tr:hover td {{ background: #1c2128 !important; }}
 </style>
 </head>
 <body>
-<h1>Solar Expanse - Build Cost Calculator</h1>
-<p style="color:#8b949e;font-size:12px;margin-bottom:16px;">
-  Enter quantities - totals update automatically. 1 unit = 1 tonne.</p>
+<div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:8px;">
+  <label for="lang-select" style="color:#8b949e; font-size:12px;" data-loc-key="lang_label">Language:</label>
+  <select id="lang-select" style="background:#161b22; color:#c9d1d9; border:1px solid #30363d; border-radius:4px; padding:3px 8px; font-size:12px;"></select>
+</div>
+<h1 data-loc-key="title">Solar Expanse - Build Cost Calculator</h1>
 
 {building_sections_html}
 {launch_vehicles_section_html}
-<h2>Spacecraft ({len(spacecraft)})</h2>
+<h2 data-count="{len(spacecraft)}" data-loc-key="{_SECTION_LOC_KEY["spacecraft"]}">{_section_display("spacecraft")} ({len(spacecraft)})</h2>
 <table id="tbl-spacecraft" data-res='{all_res_json}'>
-<thead>{header_row(all_res, "Spacecraft")}</thead>
+<thead>{header_row(all_res, _section_display("spacecraft"), "spacecraft_col")}</thead>
 <tbody>
 {s_rows}
-{subtotal_row(all_res, "Spacecraft subtotal")}
+{subtotal_row(all_res, "Subtotal", loc_key="subtotal_label")}
 </tbody>
 </table>
 
 <!-- Grand total panel -->
 <div id="grand-panel">
-  <h3>TOTAL</h3>
+  <h3 data-loc-key="grand_total">TOTAL</h3>
   {grand_cells}
   <div id="grand-mass">0 t total mass</div>
   <div id="grand-days">0 days build</div>
   <label id="modules-label">
-    <span>Construction modules:</span>
+    <span data-loc-key="grand_modules_label">Construction modules:</span>
     <input type="number" id="modules-input" min="1" value="1">
   </label>
   <div id="grand-parallel">- days parallel</div>
   <div id="tech-checks">
-    <label class="tech-label" title="Diamonds tech: -10% build cost">
-      <input type="checkbox" id="tech-diamonds"> Diamonds <span class="tech-note">(-10% cost)</span>
+    <label class="tech-label">
+      <input type="checkbox" id="tech-diamonds"> <span data-loc-key="research_mat_diamondoid_Title">{_loc_get("research_mat_diamondoid_Title") or "Diamondoids"}</span> <span class="tech-note" data-loc-key="tech_diamonds_note">(-10% cost)</span>
     </label>
-    <label class="tech-label" title="Mega-scale carbon allotrope application: -10% build time">
-      <input type="checkbox" id="tech-carbon"> Mega-scale carbon allotrope <span class="tech-note">(-10% time)</span>
+    <label class="tech-label">
+      <input type="checkbox" id="tech-carbon"> <span data-loc-key="research_mat_fibre4_Title">{_loc_get("research_mat_fibre4_Title") or "Mega-scale Carbon Allotrope Application"}</span> <span class="tech-note" data-loc-key="tech_carbon_note">(-10% time)</span>
     </label>
   </div>
-  <button id="btn-clear">Clear All</button>
+  <button id="btn-clear" data-loc-key="btn_clear">Clear All</button>
 </div>
 
 <script>
 const ALL_RES = {all_res_json};
+const AVAILABLE_LOCALES = {_available_locales_json};
+const GAME_LOC = {_game_loc_json};
+const UI_LOC = {_ui_loc_json};
+const RESOURCE_LOC_KEYS = {_resource_loc_keys_json};
+const NATIVE_NAMES = {_native_names_json};
+const FACILITY_TYPE_LOC_KEYS = {json.dumps(_FACILITY_TYPE_LOC_KEY)};
+const SECTION_LOC_KEYS = {json.dumps(_SECTION_LOC_KEY)};
+
+let currentLocale = 'en-US';
+
+function toSentenceCase(s) {{
+  if (!s) return s;
+  return s[0].toUpperCase() + s.slice(1).toLowerCase();
+}}
 
 function fmt(n) {{
   if (n === 0) return '-';
@@ -702,7 +1115,38 @@ function fmtDays(n) {{
   return n.toLocaleString('en-US');
 }}
 
+// Get UI translation
+function t(key, locale) {{
+  const loc = UI_LOC[locale];
+  if (loc && loc[key] !== undefined) return loc[key];
+  const enLoc = UI_LOC['en-US'];
+  if (enLoc && enLoc[key] !== undefined) return enLoc[key];
+  return key;
+}}
+
+// Get localized game content name
+const GAME_LOC_LOWER = {{}};
+for (const [lc, dict] of Object.entries(GAME_LOC)) {{
+  const lowerDict = {{}};
+  for (const [k, v] of Object.entries(dict)) lowerDict[k.toLowerCase()] = v;
+  GAME_LOC_LOWER[lc] = lowerDict;
+}}
+
+function getGameLocName(locKey, locale) {{
+  if (!locKey) return '';
+  const loc = GAME_LOC[locale];
+  if (loc && loc[locKey]) return loc[locKey];
+  const locLower = GAME_LOC_LOWER[locale];
+  if (locLower && locLower[locKey.toLowerCase()]) return locLower[locKey.toLowerCase()];
+  const enLoc = GAME_LOC['en-US'];
+  if (enLoc && enLoc[locKey]) return enLoc[locKey];
+  const enLocLower = GAME_LOC_LOWER['en-US'];
+  if (enLocLower && enLocLower[locKey.toLowerCase()]) return enLocLower[locKey.toLowerCase()];
+  return locKey;
+}}
+
 function recalc() {{
+  const locale = document.documentElement.lang || currentLocale;
   const grandTotals = {{}};
   ALL_RES.forEach(r => grandTotals[r] = 0);
   let grandMass = 0;
@@ -785,9 +1229,9 @@ function recalc() {{
       }}
     }});
   document.getElementById('grand-mass').textContent =
-    fmt(grandMass) + ' t total mass';
+    fmt(grandMass) + ' t ' + t('grand_mass', locale);
   document.getElementById('grand-days').textContent =
-    fmtDays(grandDays) + ' days (sequential)';
+    fmtDays(grandDays) + ' ' + t('grand_days_seq', locale);
 
   const modules = Math.max(1, parseInt(document.getElementById('modules-input').value) || 1);
   // Greedy LPT scheduler: assign each job to the module finishing earliest
@@ -806,8 +1250,10 @@ function recalc() {{
   const parallelStr = parallelDays > 0
     ? (Number.isInteger(parallelDays) ? parallelDays.toLocaleString('en-US') : parallelDays.toFixed(1))
     : '0';
+  const grandDaysPar = t('grand_days_par', locale);
+  const grandModuleLabel = modules !== 1 ? t('grand_modules', locale) : t('grand_module', locale);
   document.getElementById('grand-parallel').textContent =
-    parallelStr + ' days with ' + modules + ' module' + (modules !== 1 ? 's' : '');
+    parallelStr + ' ' + grandDaysPar + ' ' + modules + ' ' + grandModuleLabel;
 }}
 
 document.addEventListener('input', e => {{
@@ -831,14 +1277,161 @@ document.getElementById('grand-panel').addEventListener('click', e => {{
   const raw = totalEl.dataset.raw;
   if (raw === undefined) return;
   const num = parseFloat(raw);
+  const locale = document.documentElement.lang || currentLocale;
   navigator.clipboard.writeText(num.toString()).then(() => {{
-    const label = grandRes.querySelector('.res-label').textContent;
-    totalEl.textContent = 'Copied!';
+    totalEl.textContent = t('copied', locale);
     setTimeout(() => {{ totalEl.textContent = num > 0 ? fmt(num) : '0'; }}, 800);
   }}).catch(() => {{}});
 }});
 
-recalc();
+// === Language support ===
+
+// Detect best locale from browser
+function detectLocale() {{
+  // Check localStorage first
+  const stored = localStorage.getItem('se-locale');
+  if (stored && AVAILABLE_LOCALES.includes(stored)) return stored;
+
+  // Try exact match with browser language
+  const browserLang = navigator.language || 'en-US';
+  if (AVAILABLE_LOCALES.includes(browserLang)) return browserLang;
+
+  // Try primary language match
+  const primary = browserLang.split('-')[0].toLowerCase();
+  for (const loc of AVAILABLE_LOCALES) {{
+    if (loc.toLowerCase().startsWith(primary)) return loc;
+  }}
+
+  // Fallback to en-US, or first available
+  return AVAILABLE_LOCALES.includes('en-US') ? 'en-US' : AVAILABLE_LOCALES[0];
+}}
+
+// Apply locale to entire page
+function applyLocale(locale) {{
+  currentLocale = locale;
+  // Update html lang attribute
+  document.documentElement.lang = locale;
+
+  // Update all elements with data-loc-key
+  document.querySelectorAll('[data-loc-key]').forEach(el => {{
+    const key = el.dataset.locKey;
+    const translated = t(key, locale);
+    // Only update if the element has no children with their own data-loc-key
+    if (!el.querySelector('[data-loc-key]')) {{
+      el.textContent = translated;
+    }}
+  }});
+
+  // Update column mass small element (has its own data-loc-key)
+  document.querySelectorAll('th.col-mass small[data-loc-key]').forEach(small => {{
+    small.textContent = '(' + t('col_mass_unit', locale) + ')';
+  }});
+
+  // Update category and section headings using game loc keys
+  document.querySelectorAll('h2[data-cat]').forEach(h2 => {{
+    const count = h2.dataset.count;
+    const locKey = h2.dataset.locKey;
+    const name = getGameLocName(locKey, locale);
+    h2.textContent = toSentenceCase(name) + ' (' + count + ')';
+  }});
+  document.querySelectorAll('h2[data-count]:not([data-cat])').forEach(h2 => {{
+    const count = h2.dataset.count || '';
+    const locKey = h2.dataset.locKey;
+    const name = getGameLocName(locKey, locale);
+    h2.textContent = toSentenceCase(name) + (count ? ' (' + count + ')' : '');
+  }});
+
+  // Update row display names (game content) - uppercase for consistency
+  document.querySelectorAll('tr[data-loc-name-key]').forEach(row => {{
+    const locKey = row.dataset.locNameKey;
+    const fallbackKey = row.dataset.locNameFallback || '';
+    let name = getGameLocName(locKey, locale);
+    if (!name && fallbackKey) name = getGameLocName(fallbackKey, locale);
+    if (name) {{
+      name = name.toUpperCase();
+      const nameSpan = row.querySelector('.col-name span');
+      if (nameSpan) {{
+        const small = nameSpan.querySelector('small');
+        if (small) {{
+          nameSpan.childNodes[0].textContent = name;
+        }} else {{
+          nameSpan.textContent = name;
+        }}
+      }}
+    }}
+  }});
+
+  // Update resource column headers: update label text and icon tooltip
+  document.querySelectorAll('th[data-res]').forEach(th => {{
+    const resId = th.dataset.res;
+    const locKey = RESOURCE_LOC_KEYS[resId];
+    if (locKey) {{
+      const name = getGameLocName(locKey, locale);
+      if (name) {{
+        // Update icon tooltip
+        const iconSpan = th.querySelector('span.res-icon');
+        if (iconSpan) iconSpan.title = name;
+        // Update label span under icon (the second span, not the icon)
+        const labelSpan = th.querySelector('span:not(.res-icon)');
+        if (labelSpan) labelSpan.textContent = name;
+      }}
+    }}
+  }});
+
+  // Update research tech labels (use game loc)
+  document.querySelectorAll('[data-loc-key^="research_mat_"]').forEach(el => {{
+    const name = getGameLocName(el.dataset.locKey, locale);
+    if (name) el.textContent = name;
+  }});
+
+  // Update grand panel resource labels and tooltips
+  document.querySelectorAll('.grand-res').forEach(el => {{
+    const m = el.id && el.id.match(/^grand-(.+)$/);
+    if (!m) return;
+    const resId = m[1];
+    const locKey = RESOURCE_LOC_KEYS[resId];
+    if (!locKey) return;
+    const name = getGameLocName(locKey, locale);
+    if (name) {{
+      const iconSpan = el.querySelector('span.res-icon');
+      if (iconSpan) iconSpan.title = name;
+      const labelSpan = el.querySelector('span.res-label');
+      if (labelSpan) labelSpan.textContent = name;
+    }}
+  }});
+
+  // Update subtotal labels
+  document.querySelectorAll('.subtotal-label[data-loc-key]').forEach(el => {{
+    el.textContent = t(el.dataset.locKey, locale);
+  }});
+
+  // Update grand panel dynamic text
+  recalc();  // This will re-render with new locale via format functions
+
+  // Save preference
+  localStorage.setItem('se-locale', locale);
+
+  // Update select dropdown
+  const sel = document.getElementById('lang-select');
+  if (sel) sel.value = locale;
+}}
+
+// Populate language selector
+function initLangSelector() {{
+  const sel = document.getElementById('lang-select');
+  if (!sel) return;
+  AVAILABLE_LOCALES.forEach(loc => {{
+    const opt = document.createElement('option');
+    opt.value = loc;
+    opt.textContent = NATIVE_NAMES[loc] || loc;
+    sel.appendChild(opt);
+  }});
+  sel.addEventListener('change', () => applyLocale(sel.value));
+}}
+
+// Initialize on load
+initLangSelector();
+applyLocale(detectLocale());
 </script>
 </body>
 </html>
