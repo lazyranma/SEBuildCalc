@@ -11,17 +11,20 @@ searchable table.
 
 ## How It Works
 
-The pipeline has three stages:
+The pipeline has four stages:
 
-1. **Extract data** — A [BepInEx](https://github.com/BepInEx/BepInEx) plugin
-   runs inside the game and dumps all build costs, research unlocks, icon
-   references, and localization strings to JSON files in `data/`.
+1. **Build plugin** — A [BepInEx](https://github.com/BepInEx/BepInEx) plugin is
+   compiled from `extract/Plugin.cs` (handled automatically by the Makefile).
 
-2. **Extract icons** — A Python script reads the game's Unity asset files and
+2. **Extract data** — The plugin runs inside the game and dumps all build costs,
+   research unlocks, icon references, and localization strings to JSON files in
+   `data/`.
+
+3. **Extract icons** — A Python script reads the game's Unity asset files and
    exports resource, facility, spacecraft, and launch vehicle icons as PNGs
    into `icons/`.
 
-3. **Generate HTML** — A Python script consumes all the extracted data and
+4. **Generate HTML** — A Python script consumes all the extracted data and
    icons and produces a single self-contained `index.html`.
 
 ```
@@ -35,6 +38,7 @@ Game assets ──> extract_icons.py ──> icons/ ─┘
 | Dependency | Used By | Install |
 |---|---|---|
 | **Solar Expanse** (game) | Data & icon extraction | Steam |
+| **GNU Make** + **sh** | Build orchestration | Git Bash / MSYS2 / MinGW (provides both make and sh) |
 | **Python 3.9+** | Icons & HTML generation | [python.org](https://www.python.org/) |
 | **UnityPy** (Python package) | Icon extraction | `pip install -r requirements.txt` |
 | **.NET SDK 8.0+** | Plugin compilation | [dotnet.microsoft.com](https://dotnet.microsoft.com/) |
@@ -62,7 +66,9 @@ make GAME_DIR="C:\Steam\steamapps\common\Solar Expanse"
 make all
 ```
 
-This runs all three stages sequentially: `extract-run` → `icons` → `table`.
+This builds everything needed to produce `index.html`: compiles the plugin,
+launches the game to extract data, exports icons from game assets, and
+generates the HTML.  Already-up-to-date steps are skipped automatically.
 
 The game will launch briefly, extract data, then close automatically.  At the
 end you'll have `index.html` ready to use.
@@ -78,13 +84,16 @@ start index.html
 If you prefer to run each stage individually:
 
 ```sh
+# (Optional) Build just the plugin — also done automatically by 'make extract'
+make plugin
+
 # Stage 1: Launch the game and extract all data (takes ~30–120 seconds)
-make extract-run
+make extract
 
 # Stage 2: Extract icons from Unity asset files
 make icons
 
-# Stage 3: Generate the HTML calculator
+# Stage 3: Generate the HTML calculator (same as 'make all')
 make table
 ```
 
@@ -92,10 +101,10 @@ make table
 
 | Target | Description |
 |---|---|
-| `all` | Full pipeline: `extract-run` → `icons` → `table` |
-| `extract-run` | Build the BepInEx plugin, launch the game, extract data, kill the game |
+| `all` / `table` | Build `index.html` and all missing prerequisites |
+| `plugin` | Build the BepInEx extraction plugin |
+| `extract` | Launch the game, extract data, kill the game → `data/*.json` |
 | `icons` | Extract all icons from Unity assets into `icons/` |
-| `table` | Generate `index.html` from extracted data and icons |
 | `clean` | Remove all generated files (`data/`, `icons/`, `index.html`, .NET build artifacts) |
 | `help` | Show available targets and variables |
 
@@ -149,6 +158,12 @@ The default timeout is 120 seconds.  If the game takes longer to load (e.g., on
 a slow machine or first launch), increase it:
 
 ```sh
+make extract TIMEOUT=300
+```
+
+Or run the extraction script directly:
+
+```sh
 python run_extract.py --game-dir "C:\Steam\...\Solar Expanse" --timeout 300
 ```
 
@@ -159,7 +174,7 @@ SolarExpanseCalc/
 ├── extract/
 │   ├── Plugin.cs                        # BepInEx data extraction plugin
 │   └── SolarExpanseExtract.csproj       # .NET project file
-├── run_extract.py                       # Build + launch + wait + kill
+├── run_extract.py                       # Deploy + launch + wait + kill
 ├── extract_icons.py                     # Extract icons from Unity assets
 ├── generate_table.py                    # Generate index.html
 ├── Makefile                             # Orchestrate pipeline

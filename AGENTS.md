@@ -13,8 +13,9 @@ Game ──> BepInEx plugin ──> data/*.json ─────┐
 Game assets ──> extract_icons.py ──> icons/ ─┘
 ```
 
-A single BepInEx plugin (`extract/Plugin.cs`) extracts all game data at runtime
-via the real C# API, including icon/sprite references for facilities,
+The Makefile builds the plugin, then `run_extract.py` deploys it and launches
+the game. A single BepInEx plugin (`extract/Plugin.cs`) extracts all game data
+at runtime via the real C# API, including icon/sprite references for facilities,
 spacecraft, and resources.  `extract_icons.py` uses those references plus the
 game's Unity asset files to export PNG icons, which `generate_table.py` embeds
 directly into the HTML as base64 data URIs.
@@ -26,7 +27,7 @@ SolarExpanseCalc/
 ├── extract/
 │   ├── Plugin.cs                        # BepInEx data extraction plugin
 │   └── SolarExpanseExtract.csproj       # .NET project file
-├── run_extract.py                       # Build + launch + wait + kill
+├── run_extract.py                       # Deploy + launch + wait + kill
 ├── extract_icons.py                     # Extract icons from Unity assets (Python)
 ├── generate_table.py                    # Generate index.html
 ├── Makefile                             # Orchestrate pipeline
@@ -73,13 +74,14 @@ SolarExpanseCalc/
 ## Running
 
 ```bash
-make extract-run    # Launch game, extract all data, kill game
-make icons          # Extract all icons from Unity assets
-make table          # Generate HTML
-make clean          # Remove all generated files
+make plugin     # Build the BepInEx extraction plugin
+make extract    # Launch game, extract all data, kill game
+make icons      # Extract all icons from Unity assets
+make table      # Generate HTML (same as 'make all')
+make clean      # Remove all generated files
 
 # Or all in one:
-make
+make all
 ```
 
 ## Known Agent Issues

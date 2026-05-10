@@ -1,8 +1,10 @@
 """
-Build, deploy, and run the BepInEx extraction plugin.
+Deploy and run the BepInEx extraction plugin.
+
+The plugin DLL must already be built (by the Makefile) before calling this script.
 
 1. Ensure BepInEx is installed in the game directory (download if missing)
-2. Build the .NET plugin
+2. Verify the pre-built plugin DLL exists
 3. Copy the DLL + config file to BepInEx/plugins/
 4. Launch the game
 5. Wait for the marker file to appear (timeout: 2 min)
@@ -76,7 +78,6 @@ def resolve_paths():
         args,
         game_dir,
         project_root,
-        extract_dir,
         data_dir,
         plugin_src,
         plugin_dest,
@@ -133,30 +134,6 @@ def ensure_bepinex(game_dir: Path):
         if zip_path.exists():
             zip_path.unlink()
         return False
-
-
-def build_plugin(extract_dir: Path, game_dir: Path):
-    """Build the .NET plugin project."""
-    print(f"[*] Building plugin in {extract_dir} ...")
-    result = subprocess.run(
-        [
-            "dotnet",
-            "build",
-            "/p:GameDir=" + str(game_dir),
-            "--nologo",
-            "-v",
-            "q",
-        ],
-        cwd=str(extract_dir),
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        print("ERROR: Build failed:", flush=True)
-        print(result.stderr, flush=True)
-        return False
-    print("    Build succeeded.")
-    return True
 
 
 def install_plugin(
@@ -283,7 +260,6 @@ def main():
         args,
         game_dir,
         project_root,
-        extract_dir,
         data_dir,
         plugin_src,
         plugin_dest,
@@ -311,8 +287,17 @@ def main():
     if not ensure_bepinex(game_dir):
         sys.exit(1)
 
-    if not build_plugin(extract_dir, game_dir):
+    if not plugin_src.exists():
+        print(
+            f"ERROR: Plugin DLL not found: {plugin_src}",
+            flush=True,
+        )
+        print(
+            "       Run 'make' to build the plugin first.",
+            flush=True,
+        )
         sys.exit(1)
+    print(f"[*] Using plugin: {plugin_src}")
 
     if not install_plugin(plugin_src, plugin_dest, config_dest, data_dir):
         sys.exit(1)
