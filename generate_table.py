@@ -61,7 +61,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "(-10% time)",
         "btn_clear": "Clear All",
         "copied": "Copied!",
-        "lang_label": "Language:",
     },
     "de-DE": {
         "title": "Solar Expanse - Baukostenrechner",
@@ -81,7 +80,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "(-10% Zeit)",
         "btn_clear": "Alles löschen",
         "copied": "Kopiert!",
-        "lang_label": "Sprache:",
     },
     "fr-FR": {
         "title": "Solar Expanse - Calculateur de coûts",
@@ -101,7 +99,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "(-10% temps)",
         "btn_clear": "Tout effacer",
         "copied": "Copié !",
-        "lang_label": "Langue :",
     },
     "es-ES": {
         "title": "Solar Expanse - Calculadora de costes",
@@ -121,7 +118,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "(-10% tiempo)",
         "btn_clear": "Limpiar todo",
         "copied": "¡Copiado!",
-        "lang_label": "Idioma:",
     },
     "pt-BR": {
         "title": "Solar Expanse - Calculadora de custos",
@@ -141,7 +137,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "(-10% tempo)",
         "btn_clear": "Limpar tudo",
         "copied": "Copiado!",
-        "lang_label": "Idioma:",
     },
     "ru-RU": {
         "title": "Solar Expanse - Калькулятор стоимости",
@@ -165,7 +160,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "(-10% времени)",
         "btn_clear": "Очистить всё",
         "copied": "Скопировано!",
-        "lang_label": "Язык:",
     },
     "zh-CN": {
         "title": "Solar Expanse - 建造成本计算器",
@@ -185,7 +179,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "（-10% 时间）",
         "btn_clear": "全部清除",
         "copied": "已复制！",
-        "lang_label": "语言：",
     },
     "ja-JP": {
         "title": "Solar Expanse - 建設コスト計算機",
@@ -205,7 +198,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "（-10% 時間）",
         "btn_clear": "すべてクリア",
         "copied": "コピーしました！",
-        "lang_label": "言語：",
     },
     "ko-KR": {
         "title": "Solar Expanse - 건설 비용 계산기",
@@ -225,7 +217,6 @@ UI_TRANSLATIONS = {
         "tech_carbon_note": "(-10% 시간)",
         "btn_clear": "모두 지우기",
         "copied": "복사됨!",
-        "lang_label": "언어:",
     },
 }
 
@@ -1018,7 +1009,7 @@ tr:hover td {{ background: #1c2128 !important; }}
 </head>
 <body>
 <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:8px;">
-  <label for="lang-select" style="color:#8b949e; font-size:12px;" data-loc-key="lang_label">Language:</label>
+  <label for="lang-select" style="color:#8b949e; font-size:12px;">Language:</label>
   <select id="lang-select" style="background:#161b22; color:#c9d1d9; border:1px solid #30363d; border-radius:4px; padding:3px 8px; font-size:12px;"></select>
 </div>
 <h1 data-loc-key="title">Solar Expanse - Build Cost Calculator</h1>
