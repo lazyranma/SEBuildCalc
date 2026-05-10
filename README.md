@@ -87,7 +87,7 @@ If you prefer to run each stage individually:
 # (Optional) Build just the plugin — also done automatically by 'make extract'
 make plugin
 
-# Stage 1: Launch the game and extract all data (takes ~30–120 seconds)
+# Stage 1: Launch the game and extract all data (takes ~5–10 seconds)
 make extract
 
 # Stage 2: Extract icons from Unity asset files
@@ -154,14 +154,8 @@ If a game update changes the internal API, the plugin may need updating (see
 
 ### Extraction times out
 
-The default timeout is 120 seconds.  If the game takes longer to load (e.g., on
-a slow machine or first launch), increase it:
-
-```sh
-make extract TIMEOUT=300
-```
-
-Or run the extraction script directly:
+The default timeout is 60 seconds. If the game takes longer to load (e.g., on
+a slow machine or HDD), increase it by running the script directly:
 
 ```sh
 python run_extract.py --game-dir "C:\Steam\...\Solar Expanse" --timeout 300

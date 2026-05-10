@@ -62,8 +62,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "(-10% cost)",
         "tech_carbon_note": "(-10% time)",
         "btn_clear": "Clear All",
-        "launch_vehicle_col": "Launch Vehicle",
-        "spacecraft_col": "Spacecraft",
         "copied": "Copied!",
         "lang_label": "Language:",
     },
@@ -86,8 +84,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "(-10% Kosten)",
         "tech_carbon_note": "(-10% Zeit)",
         "btn_clear": "Alles löschen",
-        "launch_vehicle_col": "Trägerrakete",
-        "spacecraft_col": "Raumschiff",
         "copied": "Kopiert!",
         "lang_label": "Sprache:",
     },
@@ -110,8 +106,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "(-10% coût)",
         "tech_carbon_note": "(-10% temps)",
         "btn_clear": "Tout effacer",
-        "launch_vehicle_col": "Lanceur",
-        "spacecraft_col": "Vaisseau",
         "copied": "Copié !",
         "lang_label": "Langue :",
     },
@@ -134,8 +128,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "(-10% coste)",
         "tech_carbon_note": "(-10% tiempo)",
         "btn_clear": "Limpiar todo",
-        "launch_vehicle_col": "Vehículo",
-        "spacecraft_col": "Nave",
         "copied": "¡Copiado!",
         "lang_label": "Idioma:",
     },
@@ -158,8 +150,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "(-10% custo)",
         "tech_carbon_note": "(-10% tempo)",
         "btn_clear": "Limpar tudo",
-        "launch_vehicle_col": "Veículo",
-        "spacecraft_col": "Nave",
         "copied": "Copiado!",
         "lang_label": "Idioma:",
     },
@@ -182,8 +172,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "(-10% стоимости)",
         "tech_carbon_note": "(-10% времени)",
         "btn_clear": "Очистить всё",
-        "launch_vehicle_col": "Ракета",
-        "spacecraft_col": "Корабль",
         "copied": "Скопировано!",
         "lang_label": "Язык:",
     },
@@ -206,8 +194,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "（-10% 成本）",
         "tech_carbon_note": "（-10% 时间）",
         "btn_clear": "全部清除",
-        "launch_vehicle_col": "运载火箭",
-        "spacecraft_col": "航天器",
         "copied": "已复制！",
         "lang_label": "语言：",
     },
@@ -230,8 +216,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "（-10% コスト）",
         "tech_carbon_note": "（-10% 時間）",
         "btn_clear": "すべてクリア",
-        "launch_vehicle_col": "打上機",
-        "spacecraft_col": "宇宙船",
         "copied": "コピーしました！",
         "lang_label": "言語：",
     },
@@ -254,8 +238,6 @@ UI_TRANSLATIONS = {
         "tech_diamonds_note": "(-10% 비용)",
         "tech_carbon_note": "(-10% 시간)",
         "btn_clear": "모두 지우기",
-        "launch_vehicle_col": "발사체",
-        "spacecraft_col": "우주선",
         "copied": "복사됨!",
         "lang_label": "언어:",
     },
@@ -908,7 +890,7 @@ if launch_vehicles:
     lv_game_key = _SECTION_LOC_KEY["launch_vehicles"]
     launch_vehicles_section_html = f"""<h2 data-count="{len(launch_vehicles)}" data-loc-key="{lv_game_key}">{_launch_vehicles_display} ({len(launch_vehicles)})</h2>
 <table id="tbl-launch-vehicles" data-res='{all_res_json}'>
-<thead>{header_row(all_res, _launch_vehicles_display, "launch_vehicle_col")}</thead>
+<thead>{header_row(all_res, _launch_vehicles_display, _SECTION_LOC_KEY["launch_vehicles"])}</thead>
 <tbody>
 {lv_rows}
 {subtotal_row(all_res, "Subtotal", loc_key="subtotal_label")}
@@ -1059,7 +1041,7 @@ tr:hover td {{ background: #1c2128 !important; }}
 {launch_vehicles_section_html}
 <h2 data-count="{len(spacecraft)}" data-loc-key="{_SECTION_LOC_KEY["spacecraft"]}">{_section_display("spacecraft")} ({len(spacecraft)})</h2>
 <table id="tbl-spacecraft" data-res='{all_res_json}'>
-<thead>{header_row(all_res, _section_display("spacecraft"), "spacecraft_col")}</thead>
+<thead>{header_row(all_res, _section_display("spacecraft"), _SECTION_LOC_KEY["spacecraft"])}</thead>
 <tbody>
 {s_rows}
 {subtotal_row(all_res, "Subtotal", loc_key="subtotal_label")}
@@ -1315,8 +1297,12 @@ function applyLocale(locale) {{
   // Update all elements with data-loc-key
   document.querySelectorAll('[data-loc-key]').forEach(el => {{
     const key = el.dataset.locKey;
-    const translated = t(key, locale);
-    // Only update if the element has no children with their own data-loc-key
+    let translated = t(key, locale);
+    // Fall back to game loc if UI loc doesn't have the key
+    if (translated === key) {{
+      const gameName = getGameLocName(key, locale);
+      if (gameName !== key) translated = gameName;
+    }}
     if (!el.querySelector('[data-loc-key]')) {{
       el.textContent = translated;
     }}

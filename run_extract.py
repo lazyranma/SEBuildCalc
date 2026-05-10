@@ -7,7 +7,7 @@ The plugin DLL must already be built (by the Makefile) before calling this scrip
 2. Verify the pre-built plugin DLL exists
 3. Copy the DLL + config file to BepInEx/plugins/
 4. Launch the game
-5. Wait for the marker file to appear (timeout: 2 min)
+5. Wait for the marker file to appear (timeout: 60s)
 6. Kill the game
 
 Usage:
@@ -55,8 +55,8 @@ def resolve_paths():
     parser.add_argument(
         "--timeout",
         type=int,
-        default=120,
-        help="Seconds to wait for marker file (default: 120)",
+        default=60,
+        help="Seconds to wait for marker file (default: 60)",
     )
     args = parser.parse_args()
 
@@ -153,7 +153,11 @@ def install_plugin(
 
 
 def launch_game(game_exe: Path):
-    """Launch the game. Returns True if a game process was found within 15s."""
+    """Launch the game.
+
+    The game may exit and relaunch via Steam; we don't track PIDs.
+    The marker file is the only reliable success signal.
+    """
     if not game_exe.exists():
         print(f"ERROR: Game executable not found: {game_exe}", flush=True)
         return False
@@ -165,24 +169,14 @@ def launch_game(game_exe: Path):
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
-
-    print("    Waiting for game process...")
-    for _ in range(30):  # 15 seconds max
-        if _is_game_running():
-            pids = _run_tasklist(GAME_EXE_NAME)
-            print(f"    Game process found (PID: {pids})")
-            return True
-        time.sleep(0.5)
-
-    print("    WARNING: game process not found, continuing anyway...")
     return True
 
 
 def wait_for_marker(marker_path: Path, timeout: int):
     """Poll for the marker file. Returns True if found before timeout.
 
-    Detects game exit only after 3 consecutive polls where the process
-    is absent (tasklist can miss a running process momentarily).
+    Intentionally does not track game processes — the game may hand off to Steam and
+    relaunch under a different PID. The marker file is the only signal.
     """
     if marker_path.exists():
         marker_path.unlink()
@@ -192,29 +186,13 @@ def wait_for_marker(marker_path: Path, timeout: int):
     print(f"[*] Waiting for marker file (timeout: {timeout}s)...")
     print(f"    Expected: {marker_path}")
 
-    game_was_running = False
-    absent_count = 0
-
     while time.time() < deadline:
-        game_running = _is_game_running()
-
-        if game_running:
-            game_was_running = True
-            absent_count = 0
-
-        # Check marker FIRST — game may write it and exit between polls
         if marker_path.exists():
             elapsed = timeout - (deadline - time.time())
             print(f"    Marker appeared after {elapsed:.1f}s!")
             content = marker_path.read_text().strip()
             print(f"    Content: {content}")
             return True
-
-        if not game_running and game_was_running:
-            absent_count += 1
-            if absent_count >= 3:
-                print("    Game process exited before marker appeared.")
-                return False
 
         time.sleep(1)
         elapsed = int(timeout - (deadline - time.time()))
