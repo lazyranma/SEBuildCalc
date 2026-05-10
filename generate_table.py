@@ -561,8 +561,8 @@ CATEGORY_ORDER = [
     "Production",
     "Launch Facilities",
     "Terraformation",
-    "Segments",
     "Other",
+    "Segments",
 ]
 
 
