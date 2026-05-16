@@ -14,5 +14,6 @@ extract/obj/
 # IDEs
 .idea/
 .vscode/
+.zed/
 *.swp
 *.swo
