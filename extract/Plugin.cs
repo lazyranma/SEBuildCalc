@@ -101,6 +101,8 @@ namespace SolarExpanseExtract
             var spacecraft = ExtractSpacecraft(manager);
             var launchVehicles = ExtractLaunchVehicles(manager);
             var research = ExtractResearch(manager);
+            var researchBonuses = ExtractResearchBonuses(manager);
+            var researchTree = ExtractResearchTree(manager, researchBonuses);
             var resourceIcons = ExtractResourceIcons(manager);
             var allLoc = ExtractLocalization();
 
@@ -109,6 +111,8 @@ namespace SolarExpanseExtract
             WriteJson("launch_vehicle_costs.json", launchVehicles.costs);
             WriteJson("extracted_buildability.json", facilities.buildability);
             WriteJson("research_unlocks.json", research);
+            WriteJson("research_bonuses.json", researchBonuses);
+            WriteJson("research_tree.json", researchTree);
             WriteJson("facility_icons.json", facilities.icons);
             WriteJson("spacecraft_icons.json", spacecraft.icons);
             WriteJson("launch_vehicle_icons.json", launchVehicles.icons);
@@ -426,6 +430,218 @@ namespace SolarExpanseExtract
             };
         }
 
+        List<Dictionary<string, object>> ExtractResearchBonuses(object manager)
+        {
+            var bonuses = new List<Dictionary<string, object>>();
+
+            var allResProp = _mgrType.GetProperty("AllResearchDefinition",
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (allResProp == null) return bonuses;
+
+            var allRes = allResProp.GetValue(manager);
+            if (allRes == null) return bonuses;
+
+            var list = GetListProp(allRes, "ListNotEmpty")
+                    ?? GetListProp(allRes, "List")
+                    ?? (allRes as IList);
+            if (list == null) return bonuses;
+
+            // Build ID -> research object map for dependency resolution
+            var idToResearch = new Dictionary<string, object>();
+            foreach (var r in list)
+            {
+                if (r == null) continue;
+                var rid = GetProp<string>(r, "ID");
+                if (!string.IsNullOrEmpty(rid) && !idToResearch.ContainsKey(rid))
+                    idToResearch[rid] = r;
+            }
+
+            var validResearchIds = ComputeValidResearch(list, idToResearch);
+
+            foreach (var r in list)
+            {
+                if (r == null) continue;
+                var rid = GetProp<string>(r, "ID");
+                if (string.IsNullOrEmpty(rid) || !validResearchIds.Contains(rid))
+                    continue;
+
+                if (GetProp<bool>(r, "IsLockedForUI"))
+                    continue;
+
+                // Process unlockDataList and single unlockData for bonus entries
+                var unlockList = GetProp<object>(r, "UnlockDataList");
+                var unlockSingle = GetProp<object>(r, "UnlockData");
+
+                var entries = new List<object>();
+                if (unlockList is IList ulist)
+                    foreach (var u in ulist) if (u != null) entries.Add(u);
+                if (unlockSingle != null) entries.Add(unlockSingle);
+
+                foreach (var ud in entries)
+                {
+                    var actionStr = GetField<object>(ud, "actionUnlock")?.ToString() ?? "";
+                    var bonusStr = GetField<object>(ud, "bonus")?.ToString() ?? "";
+
+                    // Only interested in BuildCost and BuildSpeed bonuses
+                    if (actionStr != "UnlockBonus")
+                        continue;
+                    if (bonusStr != "BuildCost" && bonusStr != "BuildSpeed")
+                        continue;
+
+                    var bonusParameter = GetField<float>(ud, "bonusParameter");
+                    var targetsField = GetField<object>(ud, "id_ComponentOrOther");
+
+                    // Collect target IDs
+                    var targets = new List<string>();
+                    if (targetsField is IList tlist)
+                    {
+                        foreach (var t in tlist)
+                        {
+                            if (t != null)
+                            {
+                                var ts = t.ToString();
+                                if (!string.IsNullOrEmpty(ts))
+                                    targets.Add(ts);
+                            }
+                        }
+                    }
+
+                    // Collect requirement research IDs
+                    var reqs = GetProp<object>(r, "RequirementsResearch");
+                    var requirementIds = new List<string>();
+                    if (reqs is IList reqList)
+                    {
+                        foreach (var req in reqList)
+                        {
+                            if (req != null)
+                            {
+                                var reqId = GetProp<string>(req, "ID");
+                                if (!string.IsNullOrEmpty(reqId) && validResearchIds.Contains(reqId))
+                                    requirementIds.Add(reqId);
+                            }
+                        }
+                    }
+                    else if (reqs is Array reqArray)
+                    {
+                        foreach (var req in reqArray)
+                        {
+                            if (req != null)
+                            {
+                                var reqId = GetProp<string>(req, "ID");
+                                if (!string.IsNullOrEmpty(reqId) && validResearchIds.Contains(reqId))
+                                    requirementIds.Add(reqId);
+                            }
+                        }
+                    }
+
+                    var showInTree = GetProp<bool>(r, "ShowInTree");
+
+                    bonuses.Add(new Dictionary<string, object>
+                    {
+                        ["id"] = rid,
+                        ["bonus"] = bonusStr,
+                        ["bonusParameter"] = bonusParameter,
+                        ["targets"] = targets,
+                        ["requirements"] = requirementIds,
+                        ["showInTree"] = showInTree
+                    });
+
+                    Logger.LogInfo($"  Bonus: {rid} -> {bonusStr} {bonusParameter}% targets={string.Join(",", targets)}");
+                }
+            }
+
+            return bonuses;
+        }
+
+        Dictionary<string, List<string>> ExtractResearchTree(object manager,
+            List<Dictionary<string, object>> researchBonuses)
+        {
+            var tree = new Dictionary<string, List<string>>();
+
+            var allResProp = _mgrType.GetProperty("AllResearchDefinition",
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (allResProp == null) return tree;
+
+            var allRes = allResProp.GetValue(manager);
+            if (allRes == null) return tree;
+
+            var list = GetListProp(allRes, "ListNotEmpty")
+                    ?? GetListProp(allRes, "List")
+                    ?? (allRes as IList);
+            if (list == null) return tree;
+
+            // Build ID -> research map
+            var idToResearch = new Dictionary<string, object>();
+            foreach (var r in list)
+            {
+                if (r == null) continue;
+                var rid = GetProp<string>(r, "ID");
+                if (!string.IsNullOrEmpty(rid) && !idToResearch.ContainsKey(rid))
+                    idToResearch[rid] = r;
+            }
+
+            var validResearchIds = ComputeValidResearch(list, idToResearch);
+
+            // Collect all bonus research IDs and their ancestor IDs (for transitive closure)
+            var allRelevantIds = new HashSet<string>();
+            foreach (var bonus in researchBonuses)
+            {
+                var bid = bonus["id"] as string;
+                if (!string.IsNullOrEmpty(bid))
+                    allRelevantIds.Add(bid);
+            }
+
+            // BFS to find all ancestors of all bonus research
+            var queue = new Queue<string>(allRelevantIds);
+            while (queue.Count > 0)
+            {
+                var currentId = queue.Dequeue();
+                if (!idToResearch.TryGetValue(currentId, out var rd))
+                    continue;
+
+                if (!tree.ContainsKey(currentId))
+                {
+                    var reqIds = new List<string>();
+                    var reqs = GetProp<object>(rd, "RequirementsResearch");
+                    if (reqs is IList reqList)
+                    {
+                        foreach (var req in reqList)
+                        {
+                            if (req != null)
+                            {
+                                var reqId = GetProp<string>(req, "ID");
+                                if (!string.IsNullOrEmpty(reqId) && validResearchIds.Contains(reqId))
+                                {
+                                    reqIds.Add(reqId);
+                                    if (allRelevantIds.Add(reqId))
+                                        queue.Enqueue(reqId);
+                                }
+                            }
+                        }
+                    }
+                    else if (reqs is Array reqArray)
+                    {
+                        foreach (var req in reqArray)
+                        {
+                            if (req != null)
+                            {
+                                var reqId = GetProp<string>(req, "ID");
+                                if (!string.IsNullOrEmpty(reqId) && validResearchIds.Contains(reqId))
+                                {
+                                    reqIds.Add(reqId);
+                                    if (allRelevantIds.Add(reqId))
+                                        queue.Enqueue(reqId);
+                                }
+                            }
+                        }
+                    }
+                    tree[currentId] = reqIds;
+                }
+            }
+
+            return tree;
+        }
+
         HashSet<string> ComputeValidResearch(IList allResearch, Dictionary<string, object> idToResearch)
         {
             var valid = new HashSet<string>();
@@ -492,7 +708,7 @@ namespace SolarExpanseExtract
                 "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.",
                 "Game.UI.Windows.Windows.ChoseFacilityWindow.Label.",
                 "Game.UI.Windows.Windows.PlanMissionWindow.Header.",
-                "research_mat_"
+                "research_"
             };
 
             var langDir = Path.Combine(Application.dataPath,

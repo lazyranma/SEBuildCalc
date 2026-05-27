@@ -57,8 +57,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"one": "day with", "other": "days with"},
         "gp_module": {"one": "module", "other": "modules"},
         "grand_modules_label": "Construction modules:",
-        "tech_diamonds_note": "(-10% cost)",
-        "tech_carbon_note": "(-10% time)",
+        "bonus_section_title": "Research Bonuses",
+        "bonus_cost_title": "Build Cost",
+        "bonus_speed_title": "Build Speed",
+        "bonus_target_all": "ALL",
+        "bonus_target_facility": "FACILITIES",
+        "bonus_target_lv": "LAUNCH VEHICLES",
+        "bonus_target_sc": "SPACECRAFT",
         "btn_clear": "Clear All",
         "copied": "Copied!",
     },
@@ -76,8 +81,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"one": "Tag mit", "other": "Tage mit"},
         "gp_module": {"one": "Modul", "other": "Modulen"},
         "grand_modules_label": "Baumodule:",
-        "tech_diamonds_note": "(-10% Kosten)",
-        "tech_carbon_note": "(-10% Zeit)",
+        "bonus_section_title": "Forschungsboni",
+        "bonus_cost_title": "Baukosten",
+        "bonus_speed_title": "Baugeschwindigkeit",
+        "bonus_target_all": "ALLE",
+        "bonus_target_facility": "EINRICHTUNGEN",
+        "bonus_target_lv": "TRÄGERRAKETEN",
+        "bonus_target_sc": "RAUMSCHIFFE",
         "btn_clear": "Alles löschen",
         "copied": "Kopiert!",
     },
@@ -95,8 +105,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"one": "jour avec", "other": "jours avec"},
         "gp_module": {"one": "module", "other": "modules"},
         "grand_modules_label": "Modules de construction :",
-        "tech_diamonds_note": "(-10% coût)",
-        "tech_carbon_note": "(-10% temps)",
+        "bonus_section_title": "Bonus de recherche",
+        "bonus_cost_title": "Coût de construction",
+        "bonus_speed_title": "Vitesse de construction",
+        "bonus_target_all": "TOUT",
+        "bonus_target_facility": "INSTALLATIONS",
+        "bonus_target_lv": "LANCEURS",
+        "bonus_target_sc": "VAISSEAUX",
         "btn_clear": "Tout effacer",
         "copied": "Copié !",
     },
@@ -114,8 +129,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"one": "día con", "other": "días con"},
         "gp_module": {"one": "módulo", "other": "módulos"},
         "grand_modules_label": "Módulos de construcción:",
-        "tech_diamonds_note": "(-10% coste)",
-        "tech_carbon_note": "(-10% tiempo)",
+        "bonus_section_title": "Bonificaciones de investigación",
+        "bonus_cost_title": "Coste de construcción",
+        "bonus_speed_title": "Velocidad de construcción",
+        "bonus_target_all": "TODO",
+        "bonus_target_facility": "INSTALACIONES",
+        "bonus_target_lv": "LANZADERAS",
+        "bonus_target_sc": "NAVES",
         "btn_clear": "Limpiar todo",
         "copied": "¡Copiado!",
     },
@@ -133,8 +153,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"one": "dia com", "other": "dias com"},
         "gp_module": {"one": "módulo", "other": "módulos"},
         "grand_modules_label": "Módulos de construção:",
-        "tech_diamonds_note": "(-10% custo)",
-        "tech_carbon_note": "(-10% tempo)",
+        "bonus_section_title": "Bônus de pesquisa",
+        "bonus_cost_title": "Custo de construção",
+        "bonus_speed_title": "Velocidade de construção",
+        "bonus_target_all": "TUDO",
+        "bonus_target_facility": "INSTALAÇÕES",
+        "bonus_target_lv": "LANÇADORES",
+        "bonus_target_sc": "NAVES",
         "btn_clear": "Limpar tudo",
         "copied": "Copiado!",
     },
@@ -156,8 +181,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"one": "день с", "few": "дня с", "many": "дней с"},
         "gp_module": {"one": "модулем", "few": "модулями", "many": "модулями"},
         "grand_modules_label": "Строительные модули:",
-        "tech_diamonds_note": "(-10% стоимости)",
-        "tech_carbon_note": "(-10% времени)",
+        "bonus_section_title": "Бонусы исследований",
+        "bonus_cost_title": "Стоимость строительства",
+        "bonus_speed_title": "Скорость строительства",
+        "bonus_target_all": "ВСЁ",
+        "bonus_target_facility": "СООРУЖЕНИЯ",
+        "bonus_target_lv": "РАКЕТЫ-НОСИТЕЛИ",
+        "bonus_target_sc": "КОРАБЛИ",
         "btn_clear": "Очистить всё",
         "copied": "Скопировано!",
     },
@@ -175,8 +205,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"other": "天（使用"},
         "gp_module": {"other": "个模块）"},
         "grand_modules_label": "建造模块：",
-        "tech_diamonds_note": "（-10% 成本）",
-        "tech_carbon_note": "（-10% 时间）",
+        "bonus_section_title": "研究加成",
+        "bonus_cost_title": "建造成本",
+        "bonus_speed_title": "建造速度",
+        "bonus_target_all": "全部",
+        "bonus_target_facility": "设施",
+        "bonus_target_lv": "运载火箭",
+        "bonus_target_sc": "航天器",
         "btn_clear": "全部清除",
         "copied": "已复制！",
     },
@@ -194,8 +229,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"other": "日（"},
         "gp_module": {"other": "モジュール）"},
         "grand_modules_label": "建設モジュール：",
-        "tech_diamonds_note": "（-10% コスト）",
-        "tech_carbon_note": "（-10% 時間）",
+        "bonus_section_title": "研究ボーナス",
+        "bonus_cost_title": "建設コスト",
+        "bonus_speed_title": "建設速度",
+        "bonus_target_all": "すべて",
+        "bonus_target_facility": "施設",
+        "bonus_target_lv": "ロケット",
+        "bonus_target_sc": "宇宙船",
         "btn_clear": "すべてクリア",
         "copied": "コピーしました！",
     },
@@ -213,8 +253,13 @@ UI_TRANSLATIONS = {
         "gp_day_par": {"other": "일 ("},
         "gp_module": {"other": "모듈)"},
         "grand_modules_label": "건설 모듈:",
-        "tech_diamonds_note": "(-10% 비용)",
-        "tech_carbon_note": "(-10% 시간)",
+        "bonus_section_title": "연구 보너스",
+        "bonus_cost_title": "건설 비용",
+        "bonus_speed_title": "건설 속도",
+        "bonus_target_all": "전체",
+        "bonus_target_facility": "시설",
+        "bonus_target_lv": "발사체",
+        "bonus_target_sc": "우주선",
         "btn_clear": "모두 지우기",
         "copied": "복사됨!",
     },
@@ -418,6 +463,57 @@ except FileNotFoundError:
         file=sys.stderr,
     )
     sys.exit(1)
+
+# Load research bonuses for build cost/time discounts
+_RESEARCH_BONUSES = []
+_RESEARCH_TREE = {}
+try:
+    with open(DATA_DIR / "research_bonuses.json", encoding="utf-8") as f:
+        _RESEARCH_BONUSES = json.load(f)
+    print(f"Loaded {len(_RESEARCH_BONUSES)} research bonuses")
+except FileNotFoundError:
+    print("WARNING: research_bonuses.json not found — no research bonuses will be shown")
+
+try:
+    with open(DATA_DIR / "research_tree.json", encoding="utf-8") as f:
+        _RESEARCH_TREE = json.load(f)
+    print(f"Loaded research tree with {len(_RESEARCH_TREE)} nodes")
+except FileNotFoundError:
+    print("WARNING: research_tree.json not found")
+
+# Compute transitive dependency closures for bonus research.
+# For each bonus research, compute all bonus-granting ancestors
+# (traversing through non-bonus intermediates).
+_bonus_ids = {b["id"] for b in _RESEARCH_BONUSES}
+_BONUS_TRANSITIVE_REQS = {}  # id -> list of bonus-granting ancestor ids
+
+for bonus in _RESEARCH_BONUSES:
+    bid = bonus["id"]
+    visited = set()
+    all_ancestors = []
+    queue = list(bonus.get("requirements", []))
+    while queue:
+        current = queue.pop(0)
+        if current in visited:
+            continue
+        visited.add(current)
+        if current in _bonus_ids:
+            all_ancestors.append(current)
+        # Continue traversing through non-bonus intermediates
+        reqs = _RESEARCH_TREE.get(current, [])
+        for r in reqs:
+            if r not in visited:
+                queue.append(r)
+    _BONUS_TRANSITIVE_REQS[bid] = all_ancestors
+
+# Group bonuses by bonus type
+_COST_BONUSES = [b for b in _RESEARCH_BONUSES if b["bonus"] == "BuildCost"]
+_SPEED_BONUSES = [b for b in _RESEARCH_BONUSES if b["bonus"] == "BuildSpeed"]
+
+# Build loc key for each bonus research
+_bonus_loc_keys = {}
+for b in _RESEARCH_BONUSES:
+    _bonus_loc_keys[b["id"]] = b["id"] + "_Title"
 
 # Known non-buildable class types (from DLL exploration)
 # NuclearBomb = Nuclear Device quest item (module_contractitem)
@@ -735,7 +831,7 @@ def build_rows(entries, resources, key_fn, display_fn, time_fn, loc_key_fn=None)
         if loc_name_fallback:
             loc_attrs += f' data-loc-name-fallback="{htmllib.escape(loc_name_fallback, quote=True)}"'
         row = (
-            f"<tr data-costs='{costs_json}' data-time=\"{time_val}\" data-resources='{json.dumps(list(res.keys()))}'{loc_attrs}>"
+            f"<tr data-costs='{costs_json}' data-time=\"{time_val}\" data-id=\"{htmllib.escape(key, quote=True)}\" data-resources='{json.dumps(list(res.keys()))}'{loc_attrs}>"
             f'<td class="col-name">{icon_html}<span>{name}<br><small>{sub}</small></span></td>'
             f'<td class="col-qty"><input type="number" min="0" value="0" class="qty-input"></td>'
             f'<td class="col-days res-days">0</td>'
@@ -859,6 +955,72 @@ _ui_loc_json = json.dumps(
 )
 _resource_loc_keys_json = json.dumps(resource_loc_keys)
 _native_names_json = json.dumps(NATIVE_LANGUAGE_NAMES)
+
+# Build research bonuses HTML section
+_research_bonuses_html = ""
+if _RESEARCH_BONUSES:
+    _research_checks_html = ""
+
+    def _bonus_targets_display(targets):
+        parts = []
+        for t in targets:
+            if t == "All":
+                parts.append("ALL")
+            elif t == "Facility":
+                parts.append("FACILITIES")
+            elif t == "LV":
+                parts.append("LAUNCH VEHICLES")
+            elif t == "SC":
+                parts.append("SPACECRAFT")
+            elif t == "SComponent" or t == "RD":
+                continue
+            else:
+                name = _loc_get(t, t).upper()
+                if len(name) > 25:
+                    name = name[:22] + "..."
+                parts.append(name)
+        return ", ".join(parts) if parts else "ALL"
+
+    if _COST_BONUSES:
+        _research_checks_html += '<div class="bonus-group"><h4 class="bonus-group-title" data-loc-key="bonus_cost_title">Build Cost</h4>'
+        for b in _COST_BONUSES:
+            bid = b["id"]
+            pct = abs(b["bonusParameter"])
+            targets_display = _bonus_targets_display(b["targets"])
+            targets_json = json.dumps(b["targets"])
+            name = _loc_get(bid + "_Title") or bid
+            loc_key = bid + "_Title"
+            _research_checks_html += f'''
+            <label class="tech-label">
+              <input type="checkbox" class="research-check" data-research-id="{bid}">
+              <span data-loc-key="{loc_key}">{name.upper()}</span>
+              <span class="tech-note" data-targets='{targets_json}' data-pct="{pct:.0f}">(-{pct:.0f}% | {targets_display})</span>
+            </label>'''
+        _research_checks_html += '</div>'
+
+    if _SPEED_BONUSES:
+        _research_checks_html += '<div class="bonus-group"><h4 class="bonus-group-title" data-loc-key="bonus_speed_title">Build Speed</h4>'
+        for b in _SPEED_BONUSES:
+            bid = b["id"]
+            pct = abs(b["bonusParameter"])
+            targets_display = _bonus_targets_display(b["targets"])
+            targets_json = json.dumps(b["targets"])
+            name = _loc_get(bid + "_Title") or bid
+            loc_key = bid + "_Title"
+            _research_checks_html += f'''
+            <label class="tech-label">
+              <input type="checkbox" class="research-check" data-research-id="{bid}">
+              <span data-loc-key="{loc_key}">{name.upper()}</span>
+              <span class="tech-note" data-targets='{targets_json}' data-pct="{pct:.0f}">(-{pct:.0f}% | {targets_display})</span>
+            </label>'''
+        _research_checks_html += '</div>'
+
+    _research_bonuses_html = f'''<details id="research-bonuses-section" class="research-section">
+<summary><span data-loc-key="bonus_section_title">Research Bonuses</span> <span id="bonus-count">(0 active)</span></summary>
+<div class="research-checks">
+{_research_checks_html}
+</div>
+</details>'''
 
 # Build launch vehicles section HTML (only if there are launch vehicles)
 _launch_vehicles_display = _section_display("launch_vehicles")
@@ -993,10 +1155,12 @@ tr:hover td {{ background: #1c2128 !important; }}
   cursor: pointer; font-size: 12px;
 }}
 #btn-clear:hover {{ background: #30363d; color: #c9d1d9; }}
-#tech-checks {{
-  display: flex; flex-direction: column; gap: 3px;
-  justify-content: center;
-}}
+.research-section {{ margin: 12px 0 8px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 8px 16px; }}
+.research-section summary {{ color: #79c0ff; cursor: pointer; font-size: 15px; font-weight: 600; padding: 4px 0; user-select: none; }}
+.research-section summary:hover {{ color: #58a6ff; }}
+.research-checks {{ display: flex; flex-wrap: wrap; gap: 16px; padding: 8px 0; }}
+.bonus-group {{ display: flex; flex-direction: column; gap: 3px; min-width: 250px; }}
+.bonus-group-title {{ color: #79c0ff; font-size: 13px; font-weight: 600; margin: 0 0 2px; }}
 .tech-label {{
   display: flex; align-items: center; gap: 5px;
   color: #c9d1d9; font-size: 12px; cursor: pointer; white-space: nowrap;
@@ -1013,6 +1177,7 @@ tr:hover td {{ background: #1c2128 !important; }}
   <select id="lang-select" style="background:#161b22; color:#c9d1d9; border:1px solid #30363d; border-radius:4px; padding:3px 8px; font-size:12px;"></select>
 </div>
 <h1 data-loc-key="title">Solar Expanse - Build Cost Calculator</h1>
+{_research_bonuses_html}
 
 {building_sections_html}
 {launch_vehicles_section_html}
@@ -1036,14 +1201,7 @@ tr:hover td {{ background: #1c2128 !important; }}
     <input type="number" id="modules-input" min="1" value="1">
   </label>
   <div id="grand-parallel">- days parallel</div>
-  <div id="tech-checks">
-    <label class="tech-label">
-      <input type="checkbox" id="tech-diamonds"> <span data-loc-key="research_mat_diamondoid_Title">{_loc_get("research_mat_diamondoid_Title") or "Diamondoids"}</span> <span class="tech-note" data-loc-key="tech_diamonds_note">(-10% cost)</span>
-    </label>
-    <label class="tech-label">
-      <input type="checkbox" id="tech-carbon"> <span data-loc-key="research_mat_fibre4_Title">{_loc_get("research_mat_fibre4_Title") or "Mega-scale Carbon Allotrope Application"}</span> <span class="tech-note" data-loc-key="tech_carbon_note">(-10% time)</span>
-    </label>
-  </div>
+  <button id="btn-toggle-bonuses" style="background:#1a2332; border:1px solid #3a6a9a; color:#79c0ff; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:12px; white-space:nowrap;" data-loc-key="bonus_section_title">Research Bonuses</button>
   <button id="btn-clear" data-loc-key="btn_clear">Clear All</button>
 </div>
 
@@ -1056,6 +1214,9 @@ const RESOURCE_LOC_KEYS = {_resource_loc_keys_json};
 const NATIVE_NAMES = {_native_names_json};
 const FACILITY_TYPE_LOC_KEYS = {json.dumps(_FACILITY_TYPE_LOC_KEY)};
 const SECTION_LOC_KEYS = {json.dumps(_SECTION_LOC_KEY)};
+const RESEARCH_BONUSES = {json.dumps(_RESEARCH_BONUSES)};
+const BONUS_TRANSITIVE_REQS = {json.dumps(_BONUS_TRANSITIVE_REQS)};
+const BONUS_LOC_KEYS = {json.dumps(_bonus_loc_keys)};
 
 let currentLocale = 'en-US';
 
@@ -1111,6 +1272,88 @@ function pluralize(key, count, locale) {{
   return forms[cat] || forms.other || '';
 }}
 
+function handleResearchCheck(e) {{
+  if (!e.target.classList.contains('research-check')) return;
+  const researchId = e.target.dataset.researchId;
+  if (!researchId) return;
+
+  if (e.target.checked) {{
+    checkAncestors(researchId);
+  }} else {{
+    uncheckDescendants(researchId);
+  }}
+  recalc();
+}}
+
+function checkAncestors(researchId) {{
+  const reqs = BONUS_TRANSITIVE_REQS[researchId];
+  if (!reqs) return;
+  for (const reqId of reqs) {{
+    const cb = document.querySelector(`.research-check[data-research-id="${{reqId}}"]`);
+    if (cb && !cb.checked) {{
+      cb.checked = true;
+      checkAncestors(reqId);
+    }}
+  }}
+}}
+
+function uncheckDescendants(researchId) {{
+  document.querySelectorAll('.research-check:checked').forEach(cb => {{
+    const otherId = cb.dataset.researchId;
+    if (!otherId || otherId === researchId) return;
+    const reqs = BONUS_TRANSITIVE_REQS[otherId];
+    if (!reqs) return;
+    if (reqs.includes(researchId)) {{
+      cb.checked = false;
+      uncheckDescendants(otherId);
+    }}
+  }});
+}}
+
+function getActiveBonuses() {{
+  const active = {{}};
+  for (const b of RESEARCH_BONUSES) {{
+    const cb = document.querySelector(`.research-check[data-research-id="${{b.id}}"]`);
+    if (cb && cb.checked) {{
+      if (!active[b.bonus]) active[b.bonus] = [];
+      active[b.bonus].push(b);
+    }}
+  }}
+  return active;
+}}
+
+function appliesTo(targets, rowId) {{
+  if (!rowId || !targets || !targets.length) return false;
+  for (const t of targets) {{
+    if (t === 'All') return true;
+    if (t === 'Facility' && (rowId.startsWith('build_') || rowId.startsWith('module_'))) return true;
+    if (t === 'LV' && (rowId.startsWith('lv_') || rowId.toLowerCase().startsWith('id_rocket_'))) return true;
+    if (t === 'SC' && rowId.startsWith('spacecraft_')) return true;
+    if (t.toLowerCase() === rowId.toLowerCase()) return true;
+  }}
+  return false;
+}}
+
+function computeRowMultipliers(rowId, activeBonuses) {{
+  let costSum = 0;
+  let timeSum = 0;
+  if (activeBonuses.BuildCost) {{
+    for (const b of activeBonuses.BuildCost) {{
+      if (appliesTo(b.targets, rowId)) {{
+        costSum += Math.abs(b.bonusParameter);
+      }}
+    }}
+  }}
+  if (activeBonuses.BuildSpeed) {{
+    for (const b of activeBonuses.BuildSpeed) {{
+      if (appliesTo(b.targets, rowId)) {{
+        timeSum += Math.abs(b.bonusParameter);
+      }}
+    }}
+  }}
+  return {{ costMult: (100 - costSum) / 100, timeMult: (100 - timeSum) / 100 }};
+}}
+
 function recalc() {{
   const locale = document.documentElement.lang || currentLocale;
   const grandTotals = {{}};
@@ -1119,8 +1362,7 @@ function recalc() {{
   let grandDays = 0;
   const allJobs = [];  // one entry per unit: its build time in days
 
-  const costMult = document.getElementById('tech-diamonds').checked ? 0.9 : 1.0;
-  const timeMult = document.getElementById('tech-carbon').checked  ? 0.9 : 1.0;
+  const activeBonuses = getActiveBonuses();
 
   document.querySelectorAll('table[data-res]').forEach(tbl => {{
     const tblRes = JSON.parse(tbl.dataset.res);
@@ -1132,6 +1374,8 @@ function recalc() {{
       const qty = parseInt(row.querySelector('.qty-input').value) || 0;
       const costs = JSON.parse(row.dataset.costs);
       const time  = parseFloat(row.dataset.time) || 0;
+      const rowId = row.dataset.id || '';
+      const {{ costMult, timeMult }} = computeRowMultipliers(rowId, activeBonuses);
 
       // Row shows base cost (per unit), not affected by qty
       // Days cell: show base build time (not multiplied)
@@ -1218,18 +1462,37 @@ function recalc() {{
     : '0';
   document.getElementById('grand-parallel').textContent =
     parallelStr + ' ' + pluralize('gp_day_par', parallelDays, locale) + ' ' + modules + ' ' + pluralize('gp_module', modules, locale);
+
+  // Update bonus count
+  const countEl = document.getElementById('bonus-count');
+  if (countEl) {{
+    const checkedCount = document.querySelectorAll('.research-check:checked').length;
+    countEl.textContent = '(' + checkedCount + ' active)';
+  }}
 }}
 
 document.addEventListener('input', e => {{
   if (e.target.classList.contains('qty-input')
-    || e.target.id === 'modules-input'
-    || e.target.id === 'tech-diamonds'
-    || e.target.id === 'tech-carbon') recalc();
+    || e.target.id === 'modules-input') recalc();
+}});
+
+document.addEventListener('change', e => {{
+  if (e.target.classList.contains('research-check')) {{
+    handleResearchCheck(e);
+  }}
 }});
 
 document.getElementById('btn-clear').addEventListener('click', () => {{
   document.querySelectorAll('.qty-input').forEach(el => el.value = 0);
   recalc();
+}});
+
+document.getElementById('btn-toggle-bonuses').addEventListener('click', () => {{
+  const section = document.getElementById('research-bonuses-section');
+  if (section) {{
+    section.open = !section.open;
+    section.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+  }}
 }});
 
 // Click grand-res to copy raw value to clipboard
@@ -1268,6 +1531,24 @@ function detectLocale() {{
 
   // Fallback to en-US, or first available
   return AVAILABLE_LOCALES.includes('en-US') ? 'en-US' : AVAILABLE_LOCALES[0];
+}}
+
+function updateBonusNotes(locale) {{
+  document.querySelectorAll('.tech-note[data-targets]').forEach(el => {{
+    const targets = JSON.parse(el.dataset.targets);
+    const pct = el.dataset.pct;
+    const names = targets.map(t => {{
+      if (t === 'All') return t('bonus_target_all', locale);
+      if (t === 'Facility') return t('bonus_target_facility', locale);
+      if (t === 'LV') return t('bonus_target_lv', locale);
+      if (t === 'SC') return t('bonus_target_sc', locale);
+      if (t === 'SComponent' || t === 'RD') return null;
+      // Specific item ID — use game loc and uppercase
+      const name = getGameLocName(t, locale);
+      return name ? name.toUpperCase() : null;
+    }}).filter(Boolean);
+    el.textContent = '(-' + pct + '% | ' + names.join(', ') + ')';
+  }});
 }}
 
 // Apply locale to entire page
@@ -1347,9 +1628,18 @@ function applyLocale(locale) {{
   }});
 
   // Update research tech labels (use game loc)
-  document.querySelectorAll('[data-loc-key^="research_mat_"]').forEach(el => {{
+  document.querySelectorAll('[data-loc-key^="research_"]').forEach(el => {{
     const name = getGameLocName(el.dataset.locKey, locale);
-    if (name) el.textContent = name;
+    if (name) el.textContent = name.toUpperCase();
+  }});
+
+  // Update bonus group titles
+  document.querySelectorAll('.bonus-group-title').forEach(el => {{
+    const key = el.dataset.locKey;
+    if (key) {{
+      const translated = t(key, locale);
+      if (translated !== key) el.textContent = translated;
+    }}
   }});
 
   // Update grand panel resource labels and tooltips
@@ -1375,6 +1665,9 @@ function applyLocale(locale) {{
 
   // Update grand panel dynamic text
   recalc();  // This will re-render with new locale via format functions
+
+  // Update bonus target labels
+  updateBonusNotes(locale);
 
   // Save preference
   localStorage.setItem('se-locale', locale);
