@@ -14,6 +14,14 @@ with open(DATA_DIR / "spacecraft_costs.json", encoding="utf-8") as f:
 with open(DATA_DIR / "launch_vehicle_costs.json", encoding="utf-8") as f:
     launch_vehicle_data = json.load(f)
 
+# Load game version (extracted by plugin from Application.version)
+_GAME_VERSION = ""
+try:
+    with open(DATA_DIR / "game_version.json", encoding="utf-8") as f:
+        _GAME_VERSION = json.load(f)
+except FileNotFoundError:
+    pass
+
 icons_dir = BASE_DIR / "icons"
 
 ALL_RESOURCES = [
@@ -956,6 +964,11 @@ _ui_loc_json = json.dumps(
 _resource_loc_keys_json = json.dumps(resource_loc_keys)
 _native_names_json = json.dumps(NATIVE_LANGUAGE_NAMES)
 
+# Build game version badge
+_version_html = ""
+if _GAME_VERSION:
+    _version_html = f'<div style="color:#484f58;font-size:0.65em;margin-top:-12px;margin-bottom:20px;">Game version {htmllib.escape(_GAME_VERSION)}</div>'
+
 # Build research bonuses HTML section
 _research_bonuses_html = ""
 if _RESEARCH_BONUSES:
@@ -1181,6 +1194,7 @@ tr:hover td {{ background: #1c2128 !important; }}
   <select id="lang-select" style="background:#161b22; color:#c9d1d9; border:1px solid #30363d; border-radius:4px; padding:3px 8px; font-size:12px;"></select>
 </div>
 <h1 data-loc-key="title">Solar Expanse - Build Cost Calculator</h1>
+{_version_html}
 {_research_bonuses_html}
 
 {building_sections_html}

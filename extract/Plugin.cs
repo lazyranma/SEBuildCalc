@@ -97,6 +97,8 @@ namespace SolarExpanseExtract
         {
             Logger.LogInfo("=== EXTRACTION START ===");
 
+            var gameVersion = ExtractVersion();
+
             var facilities = ExtractFacilities(manager);
             var spacecraft = ExtractSpacecraft(manager);
             var launchVehicles = ExtractLaunchVehicles(manager);
@@ -129,6 +131,14 @@ namespace SolarExpanseExtract
             Logger.LogInfo("=== EXTRACTION DONE ===");
 
             WriteMarker("OK");
+        }
+
+        string ExtractVersion()
+        {
+            var version = Application.version;
+            Logger.LogInfo($"  Game version: {version}");
+            WriteJson("game_version.json", version);
+            return version;
         }
 
         // ===================================================================
