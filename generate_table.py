@@ -1695,8 +1695,10 @@ function initLangSelector() {{
 }}
 
 // Initialize on load
+const initLocale = detectLocale();
 initLangSelector();
-applyLocale(detectLocale());
+document.getElementById('lang-select').value = initLocale;
+applyLocale(initLocale);
 </script>
 </body>
 </html>
