@@ -731,14 +731,14 @@ function updateBonusNotes(locale) {
   document.querySelectorAll('.tech-note[data-targets]').forEach(el => {
     const targets = JSON.parse(el.dataset.targets);
     const pct = el.dataset.pct;
-    const names = targets.map(t => {
-      if (t === 'All') return t('bonus_target_all', locale);
-      if (t === 'Facility') return t('bonus_target_facility', locale);
-      if (t === 'LV') return t('bonus_target_lv', locale);
-      if (t === 'SC') return t('bonus_target_sc', locale);
-      if (t === 'SComponent' || t === 'RD') return null;
+    const names = targets.map(target => {
+      if (target === 'All') return t('bonus_target_all', locale);
+      if (target === 'Facility') return t('bonus_target_facility', locale);
+      if (target === 'LV') return t('bonus_target_lv', locale);
+      if (target === 'SC') return t('bonus_target_sc', locale);
+      if (target === 'SComponent' || target === 'RD') return null;
       // Specific item ID — use game loc and uppercase
-      const name = getGameLocName(t, locale);
+      const name = getGameLocName(target, locale);
       return name ? name.toUpperCase() : null;
     }).filter(Boolean);
     el.textContent = '(-' + pct + '% | ' + names.join(', ') + ')';
@@ -747,6 +747,9 @@ function updateBonusNotes(locale) {
 
 // Apply locale to entire page
 function applyLocale(locale) {
+  // Save preference first, before any DOM updates that might fail
+  localStorage.setItem('se-locale', locale);
+
   currentLocale = locale;
   // Update html lang attribute
   document.documentElement.lang = locale;
@@ -862,9 +865,6 @@ function applyLocale(locale) {
 
   // Update bonus target labels
   updateBonusNotes(locale);
-
-  // Save preference
-  localStorage.setItem('se-locale', locale);
 
   // Update select dropdown
   const sel = document.getElementById('lang-select');
