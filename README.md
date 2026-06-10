@@ -9,6 +9,8 @@ The HTML page (`index.html`) shows every buildable item with its resource costs,
 construction time, research requirements, and icons — all in a single, offline,
 searchable table.
 
+[Open Calculator](https://lazyranma.github.io/SEBuildCalc/)
+
 ## How It Works
 
 The pipeline has four stages:
