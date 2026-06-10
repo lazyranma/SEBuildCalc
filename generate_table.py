@@ -147,30 +147,6 @@ UI_TRANSLATIONS = {
         "btn_clear": "Limpiar todo",
         "copied": "¡Copiado!",
     },
-    "pt-BR": {
-        "title": "Solar Expanse - Calculadora de custos",
-        "col_name": "Nome",
-        "col_qty": "Qtd.",
-        "col_days": "Dias",
-        "col_mass": "Massa",
-        "col_mass_unit": "t",
-        "subtotal_label": "Subtotal",
-        "grand_total": "TOTAL",
-        "grand_mass": "massa total",
-        "gp_day_seq": {"one": "dia (sequencial)", "other": "dias (sequencial)"},
-        "gp_day_par": {"one": "dia com", "other": "dias com"},
-        "gp_module": {"one": "módulo", "other": "módulos"},
-        "grand_modules_label": "Módulos de construção:",
-        "bonus_section_title": "Bônus de pesquisa",
-        "bonus_cost_title": "Custo de construção",
-        "bonus_speed_title": "Velocidade de construção",
-        "bonus_target_all": "TUDO",
-        "bonus_target_facility": "INSTALAÇÕES",
-        "bonus_target_lv": "LANÇADORES",
-        "bonus_target_sc": "NAVES",
-        "btn_clear": "Limpar tudo",
-        "copied": "Copiado!",
-    },
     "ru-RU": {
         "title": "Solar Expanse - Калькулятор стоимости",
         "col_name": "Название",
@@ -271,6 +247,102 @@ UI_TRANSLATIONS = {
         "btn_clear": "모두 지우기",
         "copied": "복사됨!",
     },
+    "it-IT": {
+        "title": "Solar Expanse - Calcolatore dei costi",
+        "col_name": "Nome",
+        "col_qty": "Qtà",
+        "col_days": "Giorni",
+        "col_mass": "Massa",
+        "col_mass_unit": "t",
+        "subtotal_label": "Subtotale",
+        "grand_total": "TOTALE",
+        "grand_mass": "massa totale",
+        "gp_day_seq": {"one": "giorno (sequenziale)", "other": "giorni (sequenziali)"},
+        "gp_day_par": {"one": "giorno con", "other": "giorni con"},
+        "gp_module": {"one": "modulo", "other": "moduli"},
+        "grand_modules_label": "Moduli di costruzione:",
+        "bonus_section_title": "Bonus di ricerca",
+        "bonus_cost_title": "Costo di costruzione",
+        "bonus_speed_title": "Velocità di costruzione",
+        "bonus_target_all": "TUTTO",
+        "bonus_target_facility": "STRUTTURE",
+        "bonus_target_lv": "LANCIATORI",
+        "bonus_target_sc": "NAVI SPAZIALI",
+        "btn_clear": "Cancella tutto",
+        "copied": "Copiato!",
+    },
+    "pl-PL": {
+        "title": "Solar Expanse - Kalkulator kosztów",
+        "col_name": "Nazwa",
+        "col_qty": "Ilość",
+        "col_days": "Dni",
+        "col_mass": "Masa",
+        "col_mass_unit": "t",
+        "subtotal_label": "Suma częściowa",
+        "grand_total": "RAZEM",
+        "grand_mass": "masa całkowita",
+        "gp_day_seq": {"one": "dzień (sekwencyjnie)", "few": "dni (sekwencyjnie)", "many": "dni (sekwencyjnie)", "other": "dni (sekwencyjnie)"},
+        "gp_day_par": {"one": "dzień z", "few": "dni z", "many": "dni z", "other": "dni z"},
+        "gp_module": {"one": "modułem", "few": "modułami", "many": "modułami", "other": "modułami"},
+        "grand_modules_label": "Moduły konstrukcyjne:",
+        "bonus_section_title": "Bonusy badawcze",
+        "bonus_cost_title": "Koszt budowy",
+        "bonus_speed_title": "Prędkość budowy",
+        "bonus_target_all": "WSZYSTKO",
+        "bonus_target_facility": "OBIEKTY",
+        "bonus_target_lv": "RAKIETY NOŚNE",
+        "bonus_target_sc": "STATKI KOSMICZNE",
+        "btn_clear": "Wyczyść wszystko",
+        "copied": "Skopiowano!",
+    },
+    "pt-PT": {
+        "title": "Solar Expanse - Calculadora de custos",
+        "col_name": "Nome",
+        "col_qty": "Qtd.",
+        "col_days": "Dias",
+        "col_mass": "Massa",
+        "col_mass_unit": "t",
+        "subtotal_label": "Subtotal",
+        "grand_total": "TOTAL",
+        "grand_mass": "massa total",
+        "gp_day_seq": {"one": "dia (sequencial)", "other": "dias (sequencial)"},
+        "gp_day_par": {"one": "dia com", "other": "dias com"},
+        "gp_module": {"one": "módulo", "other": "módulos"},
+        "grand_modules_label": "Módulos de construção:",
+        "bonus_section_title": "Bónus de investigação",
+        "bonus_cost_title": "Custo de construção",
+        "bonus_speed_title": "Velocidade de construção",
+        "bonus_target_all": "TUDO",
+        "bonus_target_facility": "INSTALAÇÕES",
+        "bonus_target_lv": "LANÇADORES",
+        "bonus_target_sc": "NAVES",
+        "btn_clear": "Limpar tudo",
+        "copied": "Copiado!",
+    },
+    "tr-TR": {
+        "title": "Solar Expanse - Maliyet Hesaplayıcı",
+        "col_name": "İsim",
+        "col_qty": "Adet",
+        "col_days": "Gün",
+        "col_mass": "Kütle",
+        "col_mass_unit": "t",
+        "subtotal_label": "Ara Toplam",
+        "grand_total": "TOPLAM",
+        "grand_mass": "toplam kütle",
+        "gp_day_seq": {"one": "gün (sıralı)", "other": "gün (sıralı)"},
+        "gp_day_par": {"one": "gün (", "other": "gün ("},
+        "gp_module": {"one": "modül)", "other": "modül)"},
+        "grand_modules_label": "İnşaat modülleri:",
+        "bonus_section_title": "Araştırma Bonusları",
+        "bonus_cost_title": "İnşaat Maliyeti",
+        "bonus_speed_title": "İnşaat Hızı",
+        "bonus_target_all": "TÜMÜ",
+        "bonus_target_facility": "TESİSLER",
+        "bonus_target_lv": "FIRLATMA ARAÇLARI",
+        "bonus_target_sc": "UZAY ARAÇLARI",
+        "btn_clear": "Tümünü Temizle",
+        "copied": "Kopyalandı!",
+    },
 }
 
 NATIVE_LANGUAGE_NAMES = {
@@ -278,11 +350,14 @@ NATIVE_LANGUAGE_NAMES = {
     "de-DE": "Deutsch",
     "fr-FR": "Français",
     "es-ES": "Español",
-    "pt-BR": "Português",
+    "pt-PT": "Português",
     "ru-RU": "Русский",
     "zh-CN": "中文",
     "ja-JP": "日本語",
     "ko-KR": "한국어",
+    "it-IT": "Italiano",
+    "pl-PL": "Polski",
+    "tr-TR": "Türkçe",
 }
 
 # Languages that have UI translations available
@@ -374,6 +449,8 @@ try:
         with open(locales_path, encoding="utf-8") as f:
             locale_codes = json.load(f)
         for lc in locale_codes:
+            if lc == "pt-BR":
+                continue  # Brazilian Portuguese is not provided
             loc_path = DATA_DIR / f"loc_names_{lc}.txt"
             if loc_path.exists():
                 locale_dict = {}
@@ -957,12 +1034,14 @@ all_res_json = json.dumps(all_res)
 # Prepare locale data for embedding in HTML
 _available_locales_json = json.dumps(AVAILABLE_LOCALES)
 _game_loc_for_js = {l: ALL_GAME_LOC[l] for l in AVAILABLE_LOCALES if l in ALL_GAME_LOC}
-_game_loc_json = json.dumps(_game_loc_for_js)
+_game_loc_json = json.dumps(_game_loc_for_js, ensure_ascii=False, indent=2)
 _ui_loc_json = json.dumps(
-    {l: UI_TRANSLATIONS[l] for l in AVAILABLE_LOCALES if l in UI_TRANSLATIONS}
+    {l: UI_TRANSLATIONS[l] for l in AVAILABLE_LOCALES if l in UI_TRANSLATIONS},
+    ensure_ascii=False,
+    indent=2,
 )
 _resource_loc_keys_json = json.dumps(resource_loc_keys)
-_native_names_json = json.dumps(NATIVE_LANGUAGE_NAMES)
+_native_names_json = json.dumps(NATIVE_LANGUAGE_NAMES, ensure_ascii=False, indent=2)
 
 # Build game version badge
 _version_html = ""
