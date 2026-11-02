@@ -96,20 +96,3 @@ all available context and cause the session to break.
 **Do not** use `grep` or `read_file` on `index.html`. If you need to inspect
 or modify the HTML output, work with the source generator script
 (`generate_table.py`) and its input data files instead.
-
-### edit_file tool: DeepSeek V4 generates incorrect tool prompts
-
-Direct calls to `edit_file` with specific model (DeepSeek V4 Pro) often
-produce `"old_text":""` on the wire, even when the JSON in the tool call appears
-correct. The model generates an empty string for the `old_text` parameter
-irrespective of what was written in the tool-use block.
-
-**Workarounds:**
-- **Always attempt `edit` mode first** for files inside this project directory.
-  If the call fails (e.g. `old_text` comes back empty), retry up to two more
-  times — the intermittent nature of the bug means a retry often succeeds.
-- If `edit` mode fails after several sequential attempts, **fall back** to one
-  of the following:
-  - Use `write` mode, providing the complete file content.
-  - Spawn a sub-agent and ask it to make the edit — sub-agents do not exhibit
-    this problem.

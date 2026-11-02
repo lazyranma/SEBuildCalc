@@ -405,6 +405,7 @@ _FACILITY_TYPE_LOC_KEY = {
     "Terraformation": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Terraformation",
     "Other": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Other",
     "Segments": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.Segments",
+    "SpaceStation": "Tooltip.ChoseFacilityWindow.FaciltyTypeTab.SpaceStation",
 }
 
 # Game localization keys for section headers (PlanMissionWindow step headers)
@@ -713,7 +714,7 @@ for k, v in launch_vehicle_data.items():
 
 
 # facility_costs.json carries "facility_type" (extracted by extract_costs.py).
-# Build a quick lookup:  facility_id -> enum int (0=Modules … 8=Segments).
+# Build a quick lookup:  facility_id -> enum int (0=Modules … 9=SpaceStation).
 _FTYPE_NAMES = {
     0: "Modules",
     1: "Habitation",
@@ -724,6 +725,7 @@ _FTYPE_NAMES = {
     6: "Terraformation",
     7: "Other",
     8: "Segments",
+    9: "SpaceStation",
 }
 
 _FACILITY_TYPES = {}
@@ -744,6 +746,7 @@ CATEGORY_ORDER = [
     "Terraformation",
     "Other",
     "Segments",
+    "SpaceStation",
 ]
 
 
@@ -763,6 +766,8 @@ def get_category(building_id, class_type):
         or building_id.startswith("build_space_0g")
     ):
         return "Habitation"
+    if building_id.startswith("module_station_"):
+        return "SpaceStation"
     if building_id.startswith("build_launch_"):
         return "Launch Facilities"
     if building_id.startswith("build_terraform_"):
@@ -985,10 +990,12 @@ s_rows = build_rows(
 )
 
 # Build categorized building sections HTML.
-# Merge module_ items into the Module category – they share the same game UI tab.
+# Modules are categorized by their extracted facility_type: crew/cargo modules
+# belong to "Modules", space station modules to "SpaceStation".
 categorized = categorize_buildings(buildings)
 for mk, mv in modules.items():
-    categorized["Modules"][mk] = mv
+    cat = get_category(mk, mv.get("class_type"))
+    categorized.setdefault(cat, {})[mk] = mv
 
 building_sections_html = ""
 for cat in CATEGORY_ORDER:
